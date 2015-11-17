@@ -4,10 +4,11 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Success, Failure}
 
+import scala.util.parsing.json._
+
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import akka.pattern.ask
-import akka.io.IO
 
 import spray.can.Http
 import spray.http._
@@ -18,8 +19,6 @@ import akka.actor.ActorSystem
 
 import akka.actor._
 import spray.routing._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import spray.http._
 import spray.can.Http
@@ -57,16 +56,20 @@ class ApiActor extends HttpServiceActor with ActorLogging {
 				} else {
 					//Allowed to search.
 					//construct the JSON
-					val json:JsValue = try {
-						entity.asString(HttpCharsets.`UTF-8`).parseJson
+					val json:JSONObject = try {
+						JSON.parseFull(entity.asString(HttpCharsets.`UTF-8`)) match {
+						  case Some(a:Map[String,any]) => JSONObject(a)
+						  case None => return HttpResponse(status = StatusCodes.MethodNotAllowed, entity = entity.asString(HttpCharsets.`UTF-8`) + " Not correctly formatted")
+						}
 					} catch {
 					case e: Exception => return HttpResponse(status = StatusCodes.MethodNotAllowed, entity = entity.asString(HttpCharsets.`UTF-8`) + " Not correctly formatted")
 					}
 		    //We have the original JsonQuery
 		    //calculate the JSonQuery for the policy;
-		    val filter:JsValue = Policy2Filter.toFilter()
+		    val filter:JSONObject = Policy2Filter.toFilter()
 
-				val query = Map("query"->Map("filtered"->Map("query"->json,"filter"->filter))).toJson
+				//val query = Map("query"->Map("filtered"->Map("query"->json,"filter"->filter))).toJson
+				val query = JSONObject(Map("query"->Map("filtered"->Map("query"->json.obj("query"),"filter"->"f"))))
 				//Now we delegate this to the real elasticsearch server
 				val server: Uri = Uri(path = Path(elasticServer) + relUrl.toString)
 				log.debug(query.compactPrint)
