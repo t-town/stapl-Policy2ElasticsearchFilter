@@ -72,7 +72,6 @@ class ApiActor extends HttpServiceActor with ActorLogging {
 				val query = JSONObject(Map("query"->Map("filtered"->Map("query"->json.obj("query"),"filter"->"f"))))
 				//Now we delegate this to the real elasticsearch server
 				val server: Uri = Uri(path = Path(elasticServer) + relUrl.toString)
-				log.debug(query.compactPrint)
 				
 //				val response = (IO(Http) ? HttpRequest(requestType,server,headers,entity=query.compactPrint)).mapTo[HttpResponse]
 //				response onComplete {
@@ -80,7 +79,7 @@ class ApiActor extends HttpServiceActor with ActorLogging {
 //		      case Failure(x) => log.warning("Fail")
 //		       
 //		    }
-				HttpResponse(entity = query.prettyPrint)
+				HttpResponse(entity = query.toString())
 
 				}
 	}

@@ -13,11 +13,11 @@ object Policy2Filter {
   
   val policyString = """Rule("Ownership rule") := permit iff (resource.creator === subject.id)"""
   
-  def toFilter():JsValue =  {
+  def toFilter():JSONObject =  {
     toFilter(policyString)
   }
 
-  def toFilter(policyString: String):JsValue =  {
+  def toFilter(policyString: String):JSONObject =  {
     val subject_id = SimpleAttribute(SUBJECT,"id",String)
 		val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
 		val view = SimpleAttribute(ACTION,"view",String)
@@ -42,7 +42,7 @@ object Policy2Filter {
 
 object Rule2Filter {
   
-  def toFilter(rule: Rule, ctx: EvaluationCtx): JsValue = {
+  def toFilter(rule: Rule, ctx: EvaluationCtx): JSONObject = {
     
     rule.effect match {
       case Permit => Expression2Filter.toFilter(rule.condition,ctx)
@@ -50,10 +50,10 @@ object Rule2Filter {
     }
   }
   
-  def handleDeny(exp: Expression, ctx: EvaluationCtx): JsValue = {
+  def handleDeny(exp: Expression, ctx: EvaluationCtx): JSONObject = {
     exp match {
        case x: Not => Expression2Filter.toFilter(x.expression,ctx)
-       case _ => Map("bool"->Map("must_not"->Expression2Filter.toFilter(exp,ctx))).toJson
+       case _ => JSONObject(Map("bool"->Map("must_not"->Expression2Filter.toFilter(exp,ctx))))
     }
   }
 }
@@ -61,7 +61,7 @@ object Rule2Filter {
 
 object Expression2Filter {
 
-	def toFilter(exp: Expression, ctx: EvaluationCtx): JsValue = {
+	def toFilter(exp: Expression, ctx: EvaluationCtx): JSONObject = {
 		exp match {
 		case s: EqualsValue => EqualsValue2Filter(s, ctx)
 		case s: GreaterThanValue => GreaterThanValue2Filter(s,ctx)
@@ -111,7 +111,7 @@ object Expression2Filter {
 	  }
 	}
 
-	def EqualsValue2Filter(s: EqualsValue, ctx: EvaluationCtx): JsValue = {
+	def EqualsValue2Filter(s: EqualsValue, ctx: EvaluationCtx): JSONObject = {
 	  val (r,v,_) = extractResourceValue(s.value1,s.value2,ctx);
 	  //EqualsValue: term query:
 	  /*“filter”: {
@@ -121,11 +121,11 @@ object Expression2Filter {
 	 	*	}
 	 	*/
 	  //Start building the JSON
-	  Map("term"->Map(r.toString() -> v.toString())).toJson
+	  JSONObject(Map("term"->JSONObject(Map(r.toString() -> v.toString()))))
 	  
 	}
 	
-	def GreaterThanValue2Filter(s: GreaterThanValue, ctx: EvaluationCtx): JsValue = {
+	def GreaterThanValue2Filter(s: GreaterThanValue, ctx: EvaluationCtx): JSONObject = {
 	  
 	  val (r,v,first) = extractResourceValue(s.value1, s.value2, ctx);
 	  val compareString = if (first) {
@@ -135,21 +135,21 @@ object Expression2Filter {
 	    //the resource is value2. <
 	    "lt"
 	  }
-	  val one = Map(compareString->v.toString()).toJson
-	  val two = Map(r->one).toJson
-	  val three = Map("range"->two).toJson
+	  val one = JSONObject(Map(compareString->v.toString()))
+	  val two = JSONObject(Map(r->one))
+	  val three = JSONObject(Map("range"->two))
 	  
 	  return three;
 	}
 	
-	def BoolExpression2Filter(s: BoolExpression, ctx: EvaluationCtx): JsValue = {
+	def BoolExpression2Filter(s: BoolExpression, ctx: EvaluationCtx): JSONObject = {
 	  if (s.attribute.cType != RESOURCE) {
 	    throw new IllegalStateException("BoolExpression not with Resource");
 	  }
-	  Map("term"->Map(s.attribute.name->"1")).toJson
+	  JSONObject(Map("term"->JSONObject(Map(s.attribute.name->"1"))))
 	}
 	
-	def ValueIn2Filter(s: ValueIn, ctx: EvaluationCtx): JsValue = {
+	def ValueIn2Filter(s: ValueIn, ctx: EvaluationCtx): JSONObject = {
 	  if((s.value).asInstanceOf[SimpleAttribute].cType != RESOURCE) {
 	    throw new IllegalStateException("ValueIn not with Resource");
 	  }
@@ -168,29 +168,29 @@ object Expression2Filter {
 	  
 	  val jsonList:List[String] = list.get.representation.asInstanceOf[List[String]]
 	  
-	  val one = Map((s.value).asInstanceOf[SimpleAttribute].name -> jsonList).toJson
-	  val two = Map("terms"->one).toJson
+	  val one = JSONObject(Map((s.value).asInstanceOf[SimpleAttribute].name -> JSONArray(jsonList)))
+	  val two = JSONObject(Map("terms"->one))
 	  return two;
 	}
 	
-	def Not2Filter(s: Not, ctx: EvaluationCtx): JsValue = {
-	  val inner: JsValue = toFilter(s.expression, ctx)
-	  val outer = Map("bool"->Map("must_not"->inner)).toJson
+	def Not2Filter(s: Not, ctx: EvaluationCtx): JSONObject = {
+	  val inner: JSONObject = toFilter(s.expression, ctx)
+	  val outer = JSONObject(Map("bool"->JSONObject(Map("must_not"->inner))))
 	  return outer;
 	  
 	}
 	
-	def And2Filter(s: And, ctx: EvaluationCtx): JsValue = {
+	def And2Filter(s: And, ctx: EvaluationCtx): JSONObject = {
 	  val one = toFilter(s.expression1,ctx);
 	  val two = toFilter(s.expression2,ctx);
-	  val outer = Map("bool"->Map("must"->List(one,two))).toJson
+	  val outer = JSONObject(Map("bool"->JSONObject(Map("must"->JSONArray(List(one,two))))))
 	  return outer
 	}
 	
-	def Or2Filter(s: Or, ctx: EvaluationCtx): JsValue = {
+	def Or2Filter(s: Or, ctx: EvaluationCtx): JSONObject = {
 	  val one = toFilter(s.expression1,ctx);
 	  val two = toFilter(s.expression2,ctx);
-	  val outer = Map("bool"->Map("should"->List(one,two))).toJson
+	  val outer = JSONObject(Map("bool"->JSONObject(Map("should"->JSONArray(List(one,two))))))
 	  return outer
 
 	}
