@@ -3,7 +3,7 @@ package tom.Policy2Filter.logic
 import stapl.core._
 import scala.util.parsing.json._
 import stapl.core.pdp._
-import stapl.parser._
+//import stapl.parser._
 import stapl.core.Result
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -30,13 +30,13 @@ object Policy2Filter {
 		val find = new AttributeFinder
 		val rem = new RemoteEvaluator
 		val ctx = new BasicEvaluationCtx("test",req,find,rem)
-    val policy: Rule = CompleteParser.parse(policyString,properties) match {
-      case x:Rule => x
-      case _ => throw new IllegalStateException("Policy type not allowed")
-    }
+   // val policy: Rule = CompleteParser.parse(policyString,properties) match {
+   //   case x:Rule => x
+    //  case _ => throw new IllegalStateException("Policy type not allowed")
+   // }
     
-		Rule2Filter.toFilter(policy, ctx)
-    
+		//Rule2Filter.toFilter(policy, ctx)
+    return null
   }
 }
 

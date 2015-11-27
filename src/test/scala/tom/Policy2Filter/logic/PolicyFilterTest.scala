@@ -55,7 +55,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
     	val result1 = toFilter(evaluate(policyString1),ctx);
     	val policyString2 = """Rule("Ownership rule") := permit iff (subject.id === resource.creator)"""
     	val result2 = toFilter(evaluate(policyString2),ctx);
-    	val solution = JSONObject(Map("term"->JSONObject(Map("creator"->"1"))));
+    	val solution = JSONObject(Map("term"->JSONObject(Map("creator"->"1"))))
     	println(result1);
     	assertEquals(result1,result2)
     	assertEquals(result1,solution)

@@ -10,9 +10,9 @@ object server {
 	def main(args : Array[String]) {
 		    implicit val system = ActorSystem("elasticSearch-reverseProxy")
 
-				val api = system.actorOf(ApiActor.props, "api-actor")
+				//val api = system.actorOf(ApiActor.props, "api-actor")
 
-				IO(Http) ! Http.Bind(listener = api, interface = "localhost", port = 9000)
+				//IO(Http) ! Http.Bind(listener = api, interface = "localhost", port = 9000)
 
 	}
 
