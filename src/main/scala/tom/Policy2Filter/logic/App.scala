@@ -15,7 +15,7 @@ import Policy2Filter._
 object App {
   Success
 	def main(args : Array[String]) {
-    
+   /* 
        println("test")
 		val subject_id = SimpleAttribute(SUBJECT,"id",String)
 		val resource_companyId = SimpleAttribute(RESOURCE,"company_id",String)
@@ -40,12 +40,13 @@ object App {
 		}
 		println(ru);
 		println(Rule2Filter.toFilter(ru,ctx))
+*/
 
-
-	/*	val policyString = """resource.creator = SimpleAttribute(String)
+		val policyString = """resource.creator = SimpleAttribute(String)
 
 	Policy("Simple policy with ownership rule") := when (action.id === "view") apply PermitOverrides to (
 			Rule("Ownership rule") := permit iff (resource.creator === subject.id),
+			Rule("Dumy extra rule") := permit iff ((subject.id === subject.id) | (subject.id === resource.creator)),
 			Rule("Default deny") := deny
 	)"""
 
@@ -59,6 +60,7 @@ object App {
       case Failure(e) => throw new RuntimeException(e)
 
 		}
+		
 		val policy = temppolicy match {
 		  case x: Policy => x;
 		  case _ => throw new RuntimeException
@@ -69,14 +71,22 @@ object App {
 		println(one);
 		val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
 
-		val req = new RequestCtx("1","view","1",(resource_creator,"1"));
+		val req = new RequestCtx("1","view","1");
 		val find = new AttributeFinder
 		val rem = new RemoteEvaluator
 
-		val ctx = new BasicEvaluationCtx("evId",req,find,rem);
-
-		
-		//val two = conv.normalise(one);
-		*/
+		val ctx = new BasicEvaluationCtx("evId",req,find,rem)
+		val rule = one.subpolicies(0) match {
+		  case x: stapl.core.Rule => x
+		  case _ => throw new RuntimeException
+		}
+		println("Rule:")
+		println(rule.condition)
+		println("Rule after translation to resource only:")
+		val y = Rule2Resource.toResource(rule, ctx) match {case Left(x) =>x}
+		println(y.condition)
+		val x = Rule2Filter.toFilter(y, ctx)
+		println("Rule after translation to query")
+		println(x)
 	}
 }
