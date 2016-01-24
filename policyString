@@ -1,0 +1,7 @@
+resource.creator = SimpleAttribute(String)
+
+	Policy("Simple policy with ownership rule") := when (action.id === "view") apply PermitOverrides to (
+			Rule("Ownership rule") := permit iff (resource.creator === subject.id),
+			Rule("Dummy extra rule") := permit iff ((subject.id === subject.id) | (subject.id === resource.creator)),
+			Rule("Default deny") := deny
+	)

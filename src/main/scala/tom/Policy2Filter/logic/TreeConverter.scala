@@ -7,7 +7,7 @@ import stapl.core._
  * https://github.com/Herrantyr/Thesis-tree-converter	
  * 
 **/
-class TreeConverter(var root: Policy, val knownAttributes : Set[Attribute] = Set.empty) {
+object TreeConverter {
  
   /****************************************************************************
    ****************************************************************************

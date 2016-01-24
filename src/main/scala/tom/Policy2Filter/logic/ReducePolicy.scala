@@ -4,22 +4,27 @@ import stapl.core._
 import stapl.core.pdp._
 import stapl.core.Result._
 
-object Rule2Resource {
+object RuleReduce {
   def toResource(rule: Rule, ctx: EvaluationCtx): Either[Rule,Boolean] = {
     if(rule.effect != Permit) {
       throw new IllegalStateException("Can only decide over Permit operation" + rule.toString)
     }
-    val x = Expression2Resource.toResource(rule.condition, ctx)
+    
+    val x = ExpressionReduce.toResource(rule.condition, ctx)
+    
     x match {
+      //Boolean
       case Right(x) => return Right(x)
+      //rule
       case Left(x) => {
+        //X: the new conditions
         return Left(new Rule(rule.id)(rule.effect,x,rule.obligationActions))
       }
     }
  
   }
 }
-object Expression2Resource {
+object ExpressionReduce {
  
   def toResource(exp: Expression, ctx: EvaluationCtx): Either[Expression,Boolean] = {
 		exp match {

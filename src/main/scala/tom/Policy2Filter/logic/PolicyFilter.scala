@@ -7,43 +7,71 @@ import stapl.parser._
 import stapl.core.Result
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-
+import scala.util.{Success,Failure}
+import org.parboiled2.ParseError
 
 object Policy2Filter {
   
-  val policyString = """Rule("Ownership rule") := permit iff (resource.creator === subject.id)"""
   
-  def toFilter():JsValue =  {
-    toFilter(policyString)
+  //We can init the policyString. The policy itself cannot be parsed beforehand.
+  val policyString = io.Source.fromFile("policyString").mkString
+  val (s, a, r, e) = BasicPolicy.containers
+  val parser = new CompleteParser(policyString, s,a,r,e)
+  val unparsedPolicy = parser.CompletePolicy.run() match {
+    case Success(result: Policy) => result
+    case Success(e) => sys.error(e.toString ++ "not a policy")
+    case Failure(e: ParseError) => sys.error(parser.formatError(e))
+    case Failure(e) => throw new RuntimeException(e)
+  }
+  val reducedPolicy = TreeConverter.reduce(unparsedPolicy, PermitOverrides);
+  val rule = extractRule(reducedPolicy)
+  
+  val req = new RequestCtx("1","view","")
+  val find = new AttributeFinder
+  //Adding the module that has our attributes to the finder.
+  find.addModule(new SimpleAttributeFinderModule)
+  val rem = new RemoteEvaluator
+  val ctx = new BasicEvaluationCtx("evId",req,find,rem)
+  val noResourceRule: Either[Rule,Boolean] = RuleReduce.toResource(rule,ctx)
+  
+  val filter: Either[JsValue, Boolean] = noResourceRule match {
+    case Left(rule) => Left(Rule2Filter.toFilter(rule, ctx))
+    case Right(bool) => Right(bool)
+  }
+  
+  
+  def extractRule(policy: Policy):Rule = {
+    val one: Rule = policy.subpolicies(0) match {
+      case x: Rule => x
+      case _ => throw new RuntimeException(policy.toString)
+    }
+    val two: Rule = policy.subpolicies(1) match {
+      case x: Rule => x
+      case _ => throw new RuntimeException(policy.toString)
+    }
+    if(one.effect == Permit) {
+      one
+    } else {
+      two
+    }
   }
 
-  def toFilter(policyString: String):JsValue =  {
-    val subject_id = SimpleAttribute(SUBJECT,"id",String)
-		val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
-		val view = SimpleAttribute(ACTION,"view",String)
-		val resource_bool = SimpleAttribute(RESOURCE,"boolThing",Bool)
-		val subject_org = ListAttribute(RESOURCE,"assigned_organizations",String)
-		
-		val properties = Map("resource.creator"->resource_creator, "subject.id"->subject_id, "action.id"->view,"resource.boolThing"->resource_bool,"subject.assigned_organizations"->subject_org)
-		
-		val req = new RequestCtx("1","view","1",(subject_id,"1"),(view,"view"),(subject_org,List("1","2")))
-		val find = new AttributeFinder
-		val rem = new RemoteEvaluator
-		val ctx = new BasicEvaluationCtx("test",req,find,rem)
-    
-    val policy: Rule = CompleteParser.parse(policyString,properties) match {
-      case x:Rule => x
-      case _ => throw new IllegalStateException("Policy type not allowed")
-    }
-    
-		Rule2Filter.toFilter(policy, ctx)
-    
+
+  /**
+   * This function will return either:
+   * 	JSValue: the new Filter
+   * 	False: no access allowed by default
+   * 	True: All access allowed by default
+   */
+  def toFilter():Either[JsValue,Boolean] =  {
+    return filter
   }
+
 }
 
-object Rule2Filter {
+private object Rule2Filter {
   
-  def toFilter(rule: Rule, ctx: EvaluationCtx): JsValue = {
+  def toFilter(rule: stapl.core.Rule, ctx: EvaluationCtx): JsValue = {
     
     rule.effect match {
       case Permit => Expression2Filter.toFilter(rule.condition,ctx)
@@ -60,7 +88,7 @@ object Rule2Filter {
 }
 
 
-object Expression2Filter {
+private object Expression2Filter {
 
 	def toFilter(exp: Expression, ctx: EvaluationCtx): JsValue = {
 		exp match {

@@ -9,7 +9,7 @@ import org.parboiled2._
 import Policy2Filter._
 
 /**
- * @authorimport tom.Policy2Filter.logic.PolicyFilter
+ * @author
  ${user.name}
  */
 object App {
@@ -65,14 +65,16 @@ object App {
 		  case x: Policy => x;
 		  case _ => throw new RuntimeException
 		}
-		
-		val conv = new TreeConverter(policy);
-		val one = conv.reduce(policy, PermitOverrides);
-		println(one);
-		val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
 
-		val req = new RequestCtx("1","view","1");
-		val find = new AttributeFinder
+		Policy2Filter.extractRule(policy)
+		/*
+		val one = TreeConverter.reduce(policy, PermitOverrides);
+		println(one);
+		//val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
+
+		val req = new RequestCtx("1","view","");
+		val find = new AttributeFinder()
+		find.addModule(new SimpleAttributeFinderModule())
 		val rem = new RemoteEvaluator
 
 		val ctx = new BasicEvaluationCtx("evId",req,find,rem)
@@ -80,13 +82,17 @@ object App {
 		  case x: stapl.core.Rule => x
 		  case _ => throw new RuntimeException
 		}
+		
+		
 		println("Rule:")
 		println(rule.condition)
 		println("Rule after translation to resource only:")
-		val y = Rule2Resource.toResource(rule, ctx) match {case Left(x) =>x}
+		val y = RuleReduce.toResource(rule, ctx) match {case Left(x) =>x}
 		println(y.condition)
 		val x = Rule2Filter.toFilter(y, ctx)
 		println("Rule after translation to query")
 		println(x)
+		*
+		*/
 	}
 }
