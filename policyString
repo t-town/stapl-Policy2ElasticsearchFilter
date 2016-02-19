@@ -1,7 +1,25 @@
-resource.creator = SimpleAttribute(String)
+	subject.organization_id = SimpleAttribute(String)			
+	subject.department = SimpleAttribute(String)				
+	subject.assigned_organizations = ListAttribute(String) 
 
-	Policy("Simple policy with ownership rule") := when (action.id === "view") apply PermitOverrides to (
-			Rule("Ownership rule") := permit iff (resource.creator === subject.id),
-			Rule("Dummy extra rule") := permit iff ((subject.id === subject.id) | (subject.id === resource.creator)),
-			Rule("Default deny") := deny
+	resource.creator = SimpleAttribute(String)
+	resource.origin = SimpleAttribute(String)						
+	resource.type = SimpleAttribute(String)
+	resource.destination_organization = SimpleAttribute(String)
+
+	action.id = SimpleAttribute(String)
+
+	/*//Policy("Simple policy with ownership rule, origin and destination restriction") := when (action.id === "view") apply FirstApplicable to (
+	//	Rule("Ownership rule") := permit iff (resource.creator === subject.id),
+	//	Rule("Origin") := deny iff ((subject.organization_id === resource.destination_organization) & !(resource.origin in subject.assigned_organizations)),
+	//	Rule("Organization restriction") := permit iff ((resource.origin === subject.organization_id) & ("Accounting" === subject.department)),
+	//	Rule("Default deny") := deny
+	)*/
+	
+	Policy("Simple Policy") := when  (action.id === "view") apply FirstApplicable to (
+		Rule("Ownership rule") := permit iff (resource.creator === subject.id),
+		Rule("Origin") := deny iff (!(subject.organization_id === resource.destination_organization)),
+		//Rule("Organization restriction") := permit iff ("Accounting" === subject.department),
+		//Rule("permit") := permit
+		Rule("Default deny") := deny
 	)

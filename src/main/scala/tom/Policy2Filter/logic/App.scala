@@ -7,14 +7,18 @@ import stapl.core.pdp._
 import scala.util.{Success,Failure}
 import org.parboiled2._
 import Policy2Filter._
-
+import spray.http._
+import spray.json._
+import scala.collection.mutable.HashMap
+import toString._
+import stapl.core.dsl.log
 /**
  * @author
  ${user.name}
  */
 object App {
-  Success
-	def main(args : Array[String]) {
+
+  def main(args : Array[String]) {
    /* 
        println("test")
 		val subject_id = SimpleAttribute(SUBJECT,"id",String)
@@ -42,13 +46,24 @@ object App {
 		println(Rule2Filter.toFilter(ru,ctx))
 */
 
-		val policyString = """resource.creator = SimpleAttribute(String)
-
-	Policy("Simple policy with ownership rule") := when (action.id === "view") apply PermitOverrides to (
-			Rule("Ownership rule") := permit iff (resource.creator === subject.id),
-			Rule("Dumy extra rule") := permit iff ((subject.id === subject.id) | (subject.id === resource.creator)),
-			Rule("Default deny") := deny
-	)"""
+		val policyString = 
+		  """
+		  resource.creator = SimpleAttribute(String)
+		  resource._id = SimpleAttribute(String)
+		  resource.origin = SimpleAttribute(String)
+		  subject.organization_id = SimpleAttribute(String)
+		  resource.destinationorg = SimpleAttribute(String)
+		  subject.assigned_organizations = ListAttribute(String)
+		  
+	    Policy("Simple policy with ownership rule") := when (action.id === "view") apply FirstApplicable to (
+	     	Rule("Origin") := deny iff (resource.origin === subject.organization_id),
+	       Policy("new policy") := when (subject.id === "INVALID") apply PermitOverrides to (
+  			  Rule("Ownership rule") := permit iff (subject.id === subject.id)
+	      ),
+		    //Rule("Organization restriction") := permit iff (resource.origin === subject.organization_id),
+			  Rule("Ownership rule") := deny iff (resource.creator === subject.id),
+  			Rule("Default permit") := permit
+	    )"""
 
     val (s, a, r, e) = BasicPolicy.containers
     
@@ -65,34 +80,42 @@ object App {
 		  case x: Policy => x;
 		  case _ => throw new RuntimeException
 		}
-
-		Policy2Filter.extractRule(policy)
-		/*
-		val one = TreeConverter.reduce(policy, PermitOverrides);
-		println(one);
-		//val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
-
 		val req = new RequestCtx("1","view","");
 		val find = new AttributeFinder()
-		find.addModule(new SimpleAttributeFinderModule())
+		//find.addModule(new SimpleAttributeFinderModule(attribute))
 		val rem = new RemoteEvaluator
 
 		val ctx = new BasicEvaluationCtx("evId",req,find,rem)
-		val rule = one.subpolicies(0) match {
+
+		val reduce1 = PolicyReduce.toResource(policy, ctx)
+		println("reduced policy:")
+		//Policy2Filter.extractRule(policy)
+		val reducedPolicy = reduce1 match {
+		  case Left(x) => x
+		  case Right(x) => throw new UnsupportedOperationException("Not allowed:" + x)
+		}
+		println(AbstractPolicyToString(reducedPolicy))
+		val one = TreeConverter.reduce(reducedPolicy, PermitOverrides);
+		println(AbstractPolicyToString(one));
+		//val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
+
+		val rule = one.subpolicies(1) match {
 		  case x: stapl.core.Rule => x
 		  case _ => throw new RuntimeException
 		}
 		
-		
+	
 		println("Rule:")
-		println(rule.condition)
+		println(AbstractPolicyToString(rule))
 		println("Rule after translation to resource only:")
 		val y = RuleReduce.toResource(rule, ctx) match {case Left(x) =>x}
-		println(y.condition)
+		println(AbstractPolicyToString(y))
 		val x = Rule2Filter.toFilter(y, ctx)
 		println("Rule after translation to query")
 		println(x)
-		*
-		*/
+		
+    
+    
+		
 	}
 }

@@ -23,7 +23,7 @@ import spray.routing._
 
 import tom.Policy2Filter.logic._
 import spray.http.Uri._
-
+import stapl.core.{Permit,Deny,NotApplicable,Decision}
 
 object ApiActor {
 	def props = Props[ApiActor]
@@ -66,24 +66,45 @@ class ApiActor extends HttpServiceActor with ActorLogging {
 					} catch {
 					  case e: Exception => return HttpResponse(status = StatusCodes.MethodNotAllowed, entity = entity.asString(HttpCharsets.`UTF-8`) + " Not correctly formatted")
 					}
+    
+    		//We have the original JsonQuery
+    		//calculate the JSonQuery for the policy;
 
-		//We have the original JsonQuery
-		//calculate the JSonQuery for the policy;
-
-					val policyDecision: Either[JsValue,Boolean] = Policy2Filter.toFilter()
+					val policyString = io.Source.fromFile("policyString").mkString
+					val policyDecision: Either[JsValue,Decision] = Policy2Filter.toFilter(io.Source.fromFile("policyString").mkString,io.Source.fromFile("attributes").mkString)
 					val query = policyDecision match {
 					  case Left(filter) =>
 					    {
 					        Map("query"->Map("bool"->Map("must"->json,"filter"->filter))).toJson
 					    }
-					  case Right(true) =>
+					  case Right(Permit) =>
 					    {
 					      //Access always allowed: original query
-					      json
+					      Map("query"->json).toJson
 					    }
-					  case Right(false) =>
+					  case Right(Deny) =>
 					    {
 					      //Access never allowed, no need to consult elasticsearch
+					      val returnString = """
+                                  {
+                                    "took": 0,
+                                    "timed_out": false,
+                                    "_shards": {
+                                      "total": 0,
+                                      "successful": 0,
+                                      "failed": 0
+                                    },
+                                    "hits": {
+                                      "total": 0,
+                                      "max_score": null,
+                                      "hits": []
+                                    }
+                                  }"""
+					      return HttpResponse(entity = returnString)
+					    }
+					  case Right(NotApplicable) =>
+					    {
+					      println("POLICY NOT APPLICABLE")
 					      val returnString = """
                                   {
                                     "took": 0,
@@ -105,8 +126,10 @@ class ApiActor extends HttpServiceActor with ActorLogging {
 					    //Now we delegate this to the real elasticsearch server
               val server: Uri = Uri(elasticServer + relUrl.toString)
               println("Server URL: " + server)
+              println("The new query is:")
+              println(query.prettyPrint)
               val response = (IO(Http) ? HttpRequest(requestType,server,headers.filter(filterHeader),entity=query.prettyPrint)).mapTo[HttpResponse]
-            	val result:HttpResponse = Await.result(response,10 seconds)
+            	val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
             	val resultJson = result.entity.asString.parseJson
             	println(result.entity.asString)
 					    //Return to the requestor
