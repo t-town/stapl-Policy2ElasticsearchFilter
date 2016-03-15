@@ -55,7 +55,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
     	val result1 = toFilter(evaluate(policyString1),ctx);
     	val policyString2 = """Rule("Ownership rule") := permit iff (subject.id === resource.creator)"""
     	val result2 = toFilter(evaluate(policyString2),ctx);
-    	val solution = JSONObject(Map("term"->JSONObject(Map("creator"->"1"))))
+    	val solution = (Map("term"->(Map("creator"->"1")))).toJson
     	println(result1);
     	assertEquals(result1,result2)
     	assertEquals(result1,solution)
@@ -66,7 +66,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
     	val result1 = toFilter(evaluate(policyString1),ctx);
     	val policyString2 = """Rule("Ownership rule") := permit iff (subject.id lt resource.creator)"""
     	val result2 = toFilter(evaluate(policyString2),ctx);
-    	val solution = JSONObject(Map("range"->JSONObject(Map("creator"->JSONObject(Map("gt"->"1"))))))
+    	val solution = (Map("range"->(Map("creator"->(Map("gt"->"1")))))).toJson
     	println(result1);
     	assertEquals(result1,result2)
     	assertEquals(result1,solution)
@@ -75,7 +75,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
   @Test def BoolExpression2FilterTest() {
     	val policyString = """Rule("Ownership rule") := permit iff (resource.boolThing)"""
     	val result = toFilter(evaluate(policyString),ctx)
-    	val solution = JSONObject(Map("term"->JSONObject(Map("boolThing"->"1"))))
+    	val solution = (Map("term"->(Map("boolThing"->"1")))).toJson
     	println(result)
     	assertEquals(result,solution)
   }
@@ -83,7 +83,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
   @Test def ValueIn2FilterTest {
 		val policyString = """Rule("Ownership rule") := permit iff (resource.creator in subject.assigned_organizations)"""
 		val result = toFilter(evaluate(policyString),ctx)
-		val solution = JSONObject(Map("terms"->JSONObject(Map("creator"->JSONArray(List("1","2"))))))
+		val solution = (Map("terms"->(Map("creator"->(List("1","2")))))).toJson
 		println(result)
     assertEquals(result,solution)
   }
@@ -91,7 +91,7 @@ class PolicyFilterTest extends AssertionsForJUnit {
   @Test def Not2FilterTest {
     val policyString = """Rule("Ownership rule") := permit iff (!(resource.creator === subject.id))"""
     val result = toFilter(evaluate(policyString),ctx)
-    val solution = JSONObject(Map("bool"->JSONObject(Map("must_not"->JSONObject(Map("term"->JSONObject(Map("creator"->"1"))))))))
+    val solution = (Map("bool"->(Map("must_not"->(Map("term"->(Map("creator"->"1")))))))).toJson
     println(result)
     assertEquals(result,solution)
   }
@@ -99,8 +99,8 @@ class PolicyFilterTest extends AssertionsForJUnit {
   @Test def And2FilterTest {
     val policyString = """Rule("Ownership rule") := permit iff ((resource.creator === subject.id) & (subject.id === resource.creator))"""
     val result = toFilter(evaluate(policyString),ctx)
-    val solution = JSONObject(Map("bool"->JSONObject(Map("must"->
-        JSONArray(List(JSONObject(Map("term"->JSONObject(Map("creator"->"1")))),JSONObject(Map("term"->JSONObject(Map("creator"->"1"))))))))))
+    val solution = (Map("bool"->(Map("must"->
+        (List((Map("term"->(Map("creator"->"1")))),(Map("term"->(Map("creator"->"1")))))))))).toJson
         
     println(result)
     assertEquals(result, solution)
@@ -109,8 +109,8 @@ class PolicyFilterTest extends AssertionsForJUnit {
     @Test def Or2FilterTest {
     val policyString = """Rule("Ownership rule") := permit iff ((resource.creator === subject.id) | (subject.id === resource.creator))"""
     val result = toFilter(evaluate(policyString),ctx)
-    val solution = JSONObject(Map("bool"->JSONObject(Map("should"->
-        JSONArray(List(JSONObject(Map("term"->JSONObject(Map("creator"->"1")))),JSONObject(Map("term"->JSONObject(Map("creator"->"1"))))))))))
+    val solution = (Map("bool"->(Map("should"->
+        (List((Map("term"->(Map("creator"->"1")))),(Map("term"->(Map("creator"->"1")))))))))).toJson
         
     println(result)
     assertEquals(result, solution)

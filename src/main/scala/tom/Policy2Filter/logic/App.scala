@@ -10,8 +10,9 @@ import Policy2Filter._
 import spray.http._
 import spray.json._
 import scala.collection.mutable.HashMap
-import toString._
 import stapl.core.dsl.log
+import Thesis.Thesisbuild.Experiment._
+
 /**
  * @author
  ${user.name}
@@ -82,7 +83,7 @@ object App {
 		}
 		val req = new RequestCtx("1","view","");
 		val find = new AttributeFinder()
-		//find.addModule(new SimpleAttributeFinderModule(attribute))
+		find.addModule(new SimpleAttributeFinderModule(io.Source.fromFile("attributes").mkString))
 		val rem = new RemoteEvaluator
 
 		val ctx = new BasicEvaluationCtx("evId",req,find,rem)
@@ -94,9 +95,10 @@ object App {
 		  case Left(x) => x
 		  case Right(x) => throw new UnsupportedOperationException("Not allowed:" + x)
 		}
-		println(AbstractPolicyToString(reducedPolicy))
-		val one = TreeConverter.reduce(reducedPolicy, PermitOverrides);
-		println(AbstractPolicyToString(one));
+		println((reducedPolicy))
+		val treeConverter = new TreeConverter(reducedPolicy)
+		val one = treeConverter.reduce(reducedPolicy, PermitOverrides);
+		println((one));
 		//val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
 
 		val rule = one.subpolicies(1) match {
@@ -106,10 +108,10 @@ object App {
 		
 	
 		println("Rule:")
-		println(AbstractPolicyToString(rule))
+		println((rule))
 		println("Rule after translation to resource only:")
 		val y = RuleReduce.toResource(rule, ctx) match {case Left(x) =>x}
-		println(AbstractPolicyToString(y))
+		println((y))
 		val x = Rule2Filter.toFilter(y, ctx)
 		println("Rule after translation to query")
 		println(x)

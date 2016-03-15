@@ -9,7 +9,7 @@ import stapl.core
 // the other one when we are deciding.
 class SimpleAttributeFinderModule(attributeString: String) extends AttributeFinderModule {
 
-	  val attributes = Utility.readFromString(attributeString)
+	  val attributes = ResourceReader.readFromString(attributeString)
 
 			protected def find(ctx: EvaluationCtx, cType: AttributeContainerType, name: String, aType: AttributeType, multiValued: Boolean): Option[ConcreteValue] = {
 		//ctx: contains the evaluationCtx
@@ -27,6 +27,8 @@ class SimpleAttributeFinderModule(attributeString: String) extends AttributeFind
 		  Some(new StringSeqImpl(lst))
 		} else if(aType == Bool) {
 		  Some(new BoolImpl(stringToBool(str)))
+		} else if (aType == Number) {
+		  Some(new NumberImpl(Left(str.toLong)))
 		} else {
 		  Some(new StringImpl(str))
 		}
@@ -46,7 +48,7 @@ class SimpleAttributeFinderModule(attributeString: String) extends AttributeFind
 
 }
 
-object Utility {
+object ResourceReader {
   def readFromString(attributeString: String):HashMap[String,String] = {
 			val res = HashMap.empty[String,String]
 					try {

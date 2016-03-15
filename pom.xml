@@ -34,12 +34,12 @@
 			<artifactId>stapl-parser</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- DNF conversion -->
 		<dependency>
-			<groupId>com.googlecode.aima-java</groupId>
-			<artifactId>aima-core</artifactId>
-			<version>0.11.0</version>
+			<groupId>Thesis</groupId>
+			<artifactId>Thesisbuild</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+
 		<!-- Server -->
 		<dependency>
 			<groupId>io.spray</groupId>
@@ -68,6 +68,13 @@
 			<version>2.3.9</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_2.10</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
 
 		<!-- Test -->
 		<dependency>

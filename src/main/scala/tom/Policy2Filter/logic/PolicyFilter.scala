@@ -9,13 +9,17 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 import scala.util.{Success,Failure}
 import org.parboiled2.ParseError
-import toString._
+import Thesis.Thesisbuild.Experiment._
+
 object Policy2Filter {
   
-
-    
+  var debug = false
   
-  def extractRule(policy: Policy):Rule = {
+  /**
+   * Extracts the permit rule from this policy.
+   * Assumes the policy has exactly two rules, one permit and one deny.
+   */
+  private def extractPermitRule(policy: Policy): Rule = {
     val one: Rule = policy.subpolicies(0) match {
       case x: Rule => x
       case _ => throw new RuntimeException(policy.toString)
@@ -31,31 +35,6 @@ object Policy2Filter {
     }
   }
 
-
-  def parsePolicyString(policyString:String):Policy = {
-      val (s, a, r, e) = BasicPolicy.containers
-      val parser = new CompleteParser(policyString, s,a,r,e)
-      val parsedPolicy = parser.CompletePolicy.run() match {
-        case Success(result: Policy) => result
-        case Success(e) => sys.error(e.toString ++ "not a policy")
-        case Failure(e: ParseError) => sys.error(parser.formatError(e))
-        case Failure(e) => throw new RuntimeException(e)
-      }
-          println("original policy:")
-          println(AbstractPolicyToString(parsedPolicy))
-      return parsedPolicy
-  }
-
-  def getSimpleCtx(attributeString: String): EvaluationCtx = {
-       //We get the subject, action, resource from the attributeString
-        val req = new RequestCtx(Utility.readFromString(attributeString).get("SUBJECT.id").get,"view","")
-        val find = new AttributeFinder
-        //Adding the module that has our attributes to the finder.
-        find.addModule(new SimpleAttributeFinderModule(attributeString))
-        val rem = new RemoteEvaluator
-        return new BasicEvaluationCtx("evId",req,find,rem)
-
-  }
   
     /**
    * This function will return either:
@@ -66,41 +45,51 @@ object Policy2Filter {
    */
   def toFilter(policyString: String, attributeString: String): Either[JsValue,Decision] = {
     
-    val ctx: EvaluationCtx = getSimpleCtx(attributeString)
+    val ctx: EvaluationCtx = Utility.getSimpleCtx(attributeString)
         //Step 1: Parse Policy
-    val parsedPolicy = parsePolicyString(policyString)
+    val parsedPolicy = Utility.parsePolicyString(policyString)
     //Step 2: Reduce the policy
     val eitherReducedPolicy = PolicyReduce.toResource(parsedPolicy, ctx)
     if(eitherReducedPolicy.isRight) {
       //A decision has been reached.
       val filter:Either[JsValue,Decision] = eitherReducedPolicy match {case Right(x) => Right(x)}
-      println("The reducedPolicy reached a decision based on nonresouce attributes" )
+      if(debug) {println("The reducedPolicy reached a decision based on nonresouce attributes" )}
       return filter
     } else {
       //Step 3: Normalise policy
       val reducedPolicy = eitherReducedPolicy match {case Left(x) => x}
-            println("reduced policy:")
-            println(AbstractPolicyToString(reducedPolicy))
-       val normalisedPolicy = TreeConverter.reduce(reducedPolicy, PermitOverrides)
-            println("normalised policy:")
-            println(AbstractPolicyToString(normalisedPolicy))
-        val rule = extractRule(normalisedPolicy)
+            if(debug) {
+            	println("reduced policy:")
+            	println((reducedPolicy))
+            }
+      val treeConverter = new TreeConverter(null)      
+      val normalisedPolicy = treeConverter.reduce(reducedPolicy, PermitOverrides)
+            if(debug) {
+              println("normalised policy:")
+              println((normalisedPolicy))
+            }
+      val rule = extractPermitRule(normalisedPolicy)
+          if(debug) {
             println("normalised Rule:")
-            println(AbstractPolicyToString(rule))
-            
+            println((rule))
+          }
         //Step 4: Reduce rule
         val filter =  RuleReduce.toResource(rule, ctx) match {
           case Left(rule) => {
-                println("Rule without nonresource attributes:")
-                println(AbstractPolicyToString(rule))
-    
-            val tempFilter = Rule2Filter.toFilter(rule,ctx)
-              println("Filter:")
-              println(tempFilter)
-            Left(tempFilter)
+        	  if(debug) {
+        		  println("Rule without nonresource attributes:")
+        		  println((rule))
+        	  }
+
+        	  val tempFilter = Rule2Filter.toFilter(rule,ctx)
+    			  if(debug) {
+    				  println("Filter:")
+    				  println(tempFilter)
+    			  }
+        	  Left(tempFilter)
           }
           case Right(decision) => {
-            println("a decision has been reached: " + decision)
+            if(debug) { println("a decision has been reached: " + decision) }
             Right(decision)
           }
         }
@@ -116,7 +105,7 @@ object Policy2Filter {
 private object Rule2Filter {
   
   def toFilter(rule: stapl.core.Rule, ctx: EvaluationCtx): JsValue = {
-    println("The rule is: " ++ rule.condition.toString())
+    if(Policy2Filter.debug) { println("The rule is: " ++ rule.condition.toString())}
     rule.effect match {
       case Permit => Expression2Filter.toFilter(rule.condition,ctx)
       case Deny => handleDeny(rule.condition,ctx) //optimize a deny - not scenario

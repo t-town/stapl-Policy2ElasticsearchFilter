@@ -2,27 +2,29 @@ package tom.Policy2Filter.logic
 
 import stapl.core._
 import stapl.core.pdp._
+import scala.collection.mutable.ListBuffer
 
 //prune the policy before using it
 object PolicyReduce {
   
   def toResource(policy: Policy, ctx: EvaluationCtx): Either[Policy,Decision] = {
     val targetVal = ExpressionReduce.toResource(policy.target,ctx)
+    var targetPolicy = policy
     targetVal match {
       case Right(x) => x match {
         case false => return Right(NotApplicable)
         case true => 
       }
-      case Left(x) => throw new UnsupportedOperationException("ReducePolicy does not currently support resource targets." + x)
+      case Left(reducedTarget) => targetPolicy = reduceResourceTarget(targetPolicy,reducedTarget)
     }
     
-    val reducedSubpolicies = policy.subpolicies map {
+    val reducedSubpolicies = targetPolicy.subpolicies map {
       case x: Policy => PolicyReduce.toResource(x, ctx)
       case x: Rule => RuleReduce.toResource(x, ctx)
       case x => throw new UnsupportedOperationException("ReducePolicy does not support subpolicy " + x)
     }
     
-    policy.pca match {
+    targetPolicy.pca match {
       case PermitOverrides => HandlePermitOverrides(policy,reducedSubpolicies,ctx)
       case DenyOverrides => HandleDenyOverrides(policy,reducedSubpolicies,ctx)
       case FirstApplicable => HandleFirstApplicable(policy,reducedSubpolicies,ctx)
@@ -30,7 +32,24 @@ object PolicyReduce {
     
   }
   
-  def getPermits(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
+  private def reduceResourceTarget(targetPolicy: Policy, targetExpression : Expression): Policy = {
+    val newSubpolicies = new ListBuffer[AbstractPolicy]()
+    for(subpolicy <- targetPolicy.subpolicies) {
+      subpolicy match {
+        case x: Rule => {
+          val newCondition = And(x.condition,targetExpression)
+          newSubpolicies += new Rule(x.id)(x.effect,newCondition,x.obligationActions)
+        }
+        case x: Policy => {
+          val newTarget = And(x.target,targetExpression)
+          newSubpolicies += new Policy(x.id)(newTarget,x.pca,x.subpolicies,x.obligations)
+        }
+      }
+    }
+    return new Policy(targetPolicy.id)(AlwaysTrue,targetPolicy.pca,newSubpolicies.toList,targetPolicy.obligations)
+  }
+  
+  private def getPermits(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
     subpolicies  count {
       case Right(x) => x match {
         case Permit => true
@@ -39,7 +58,7 @@ object PolicyReduce {
       case _ => false
     }
   }
-  def getDenies(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
+  private def getDenies(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
     subpolicies  count {
       case Right(x) => x match {
         case Deny => true
@@ -48,7 +67,7 @@ object PolicyReduce {
       case _ => false
     }
   }
-  def getNotApplicables(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
+  private def getNotApplicables(subpolicies: List[Either[AbstractPolicy,Decision]]): Int = {
     subpolicies  count {
       case Right(x) => x match {
         case NotApplicable => true
@@ -57,7 +76,7 @@ object PolicyReduce {
       case _ => false
     }
   }
-  def getNotDecided(subpolicies: List[Either[AbstractPolicy,Decision]]): List[AbstractPolicy] = {
+  private def getNotDecided(subpolicies: List[Either[AbstractPolicy,Decision]]): List[AbstractPolicy] = {
     subpolicies filter {
       case Left(x) => true
       case _ => false
@@ -68,7 +87,7 @@ object PolicyReduce {
   }
   
   
-  def HandlePermitOverrides(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
+  private def HandlePermitOverrides(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
     //Possibilities
     // There is a permit -> Permit
     // There is no permit
@@ -109,7 +128,7 @@ object PolicyReduce {
 
     }
   }
-  def HandleDenyOverrides(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
+  private def HandleDenyOverrides(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
     //Possibilities
     // There is a Deny -> Deny
     // There is no Deny
@@ -150,7 +169,7 @@ object PolicyReduce {
 
     }
   }
-  def HandleFirstApplicable(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
+  private def HandleFirstApplicable(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
     //Two possibilities: the first subpolicy is a decision or not
     reducedSubpolicies foreach {
       x => x match {
@@ -169,7 +188,7 @@ object PolicyReduce {
     return Right(NotApplicable)
   }
   
-  def HandleFirstApplicableNotDecided(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
+  private def HandleFirstApplicableNotDecided(policy: Policy,reducedSubpolicies: List[Either[AbstractPolicy,Decision]],ctx: EvaluationCtx): Either[Policy,Decision] = {
     //Everything that has been decided gets a defaultDeny,defaultPermit
     val newSubpolicies = reducedSubpolicies map {
       case Right(x) => x match {

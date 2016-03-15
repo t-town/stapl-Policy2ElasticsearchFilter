@@ -27,6 +27,8 @@ class ResourceAttributeFinder(resourceJson: JsValue, attributeString: String) ex
 		  Some(new StringSeqImpl(lst))
 		} else if(aType == Bool) {
 		  Some(new BoolImpl(stringToBool(str)))
+		} else if (aType == Number) {
+		  Some(new NumberImpl(Left(str.toLong)))
 		} else {
 		  Some(new StringImpl(str))
 		}
