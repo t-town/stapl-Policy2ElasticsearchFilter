@@ -57,7 +57,7 @@ object Performance {
 	  val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
 	  val scrollId = resultJson.asJsObject.fields.get("_scroll_id").get.toString
 	  continueScroll(scrollId,qResult, attributeString, initialhits,server)
-		tResult.durationServer = (System.nanoTime() - startTime)/1000000
+		tResult.durationServer = (System.nanoTime() - startTime)/1000
 
   }
 
@@ -72,7 +72,7 @@ object Performance {
   	  val resultJson = result.entity.asString.parseJson
   	  val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
   	  val scrollId = resultJson.asJsObject.fields.get("_scroll_id").get.toString
-  	  tResult.durationServer += (System.nanoTime - time)/1000000
+  	  tResult.durationServer += (System.nanoTime - time)/1000
   	  continueScrollAndCheck(scrollId, policyString, attributeString, initialhits, server, qResult, tResult)
   }
   
@@ -105,7 +105,7 @@ object Performance {
 			  while(hits.toString != "[]") {
 			    time = System.nanoTime()
           evaluateResults(hits, policyString, attributeString, qResult)
-          tResult.durationRest += (System.nanoTime() - time)/1000000
+          tResult.durationRest += (System.nanoTime() - time)/1000
           time = System.nanoTime
     		  val searchServer: Uri = Uri( globalServer + "/_search/scroll")
     		  val query = Map("scroll"->"1m".toJson,"scroll_id"-> varScroll.filterNot { x => x == '\"'}.toJson).toJson
@@ -114,7 +114,7 @@ object Performance {
 				  val resultJson = result.entity.asString.parseJson
 				  varScroll = resultJson.asJsObject.fields.get("_scroll_id").get.toString
 				  hits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
-				  tResult.durationServer += (System.nanoTime() - time)/1000000
+				  tResult.durationServer += (System.nanoTime() - time)/1000
 		  }
 
   }

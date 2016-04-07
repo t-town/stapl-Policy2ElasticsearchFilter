@@ -7,8 +7,8 @@ import tom.Policy2Filter.logic.End2End._
 class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int, searchJson: JsValue, server: String,nrUsers: Int, nrOrganizations: Int, initialSeed: Long, nrInLists: Int) {
   
     var seed = initialSeed
-		val filterTimer: performanceResult = new performanceResult
-		val originalTimer: performanceResult = new performanceResult
+		val filterTimer: PerformanceResult = new PerformanceResult
+		val originalTimer: PerformanceResult = new PerformanceResult
 		
 	def execute {
 		//warmup
@@ -20,12 +20,14 @@ class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int
 				val tResult1 = new TimeResult
 				val startTime = System.nanoTime()
 				val filter = Performance.getFilter(policy.getPolicyString, userString)
-				tResult1.durationRest = (System.nanoTime - startTime)/10000
+				tResult1.durationRest = (System.nanoTime - startTime)/1000
 				Performance.executeSearch(filter, userString, searchJson, qResult1, tResult1, server)
 				Performance.resetCache(server)
 				val qResult2 = new QueryResult
 				val tResult2 = new TimeResult
 				Performance.executeOriginalQuery(searchJson, policy.getPolicyString, userString, qResult2, tResult2, server)
+				//check validity:
+				assert(qResult1.wasRightTranslationOf(qResult2))
 			}
 		}
 		
@@ -39,7 +41,7 @@ class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int
 				val tResult = new TimeResult
 				val startTime = System.nanoTime()
 				val filter = Performance.getFilter(policy.getPolicyString, userString)
-				tResult.durationRest = (System.nanoTime - startTime)/1000000
+				tResult.durationRest = (System.nanoTime - startTime)/1000
 				Performance.executeSearch(filter, userString, searchJson, qResult, tResult, server)
 				filterTimer += tResult
 				Performance.resetCache(server)
@@ -47,6 +49,8 @@ class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int
 				val tResult2 = new TimeResult
 				Performance.executeOriginalQuery(searchJson, policy.getPolicyString, userString, qResult2, tResult2, server)
 				originalTimer += tResult2
+				//check validity
+				assert(qResult.wasRightTranslationOf(qResult2))
 		  }
 		}
 	}
