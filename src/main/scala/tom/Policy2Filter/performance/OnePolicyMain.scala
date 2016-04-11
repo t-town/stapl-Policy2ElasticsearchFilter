@@ -5,7 +5,7 @@ import spray.json.DefaultJsonProtocol._
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
 
-case class OneConfig(nrEvaluationsPerUser: Int = 100, nrWarmups: Int = 1, nrUsers: Int = 10, nrOrganizations: Int = 5, initialSeed: Long = 72, nrInLists: Int = 4, server: String = "http://localhost:9200/thesis/resource")
+case class OneConfig(nrEvaluationsPerUser: Int = 100, nrWarmups: Int = 1, nrUsers: Int = 10, nrOrganizations: Int = 5, initialSeed: Long = 72, nrInLists: Int = 4, server: String = "http://localhost:9200/thesis/resource", FilterEnabled: Boolean = true, OtherEnabled: Boolean = true)
   
 object OnePolicyMain {
     def main(args: Array[String]) {
@@ -32,6 +32,12 @@ object OnePolicyMain {
         opt[String]("server") action { (x, c) =>
           c.copy(server = x)
         } text ("The server to connect to.")
+        opt[Int]("filterEnabled")  action { (x, c) =>
+          c.copy(nrInLists = x)
+        } text ("Is the filter enabled for this test.")
+        opt[Int]("otherenabled")  action { (x, c) =>
+          c.copy(nrInLists = x)
+        } text ("Is the brute force method enabled.")
       }
       parser.parse(args, OneConfig()) map { config =>
   			  val searchJson = """
@@ -46,7 +52,7 @@ object OnePolicyMain {
   			  }
   			  """.parseJson
   			  val start = System.nanoTime()
-  			  val one = new OnePolicy(EdocsPolicy,config.nrEvaluationsPerUser,config.nrWarmups,searchJson,config.server,config.nrUsers,config.nrOrganizations,config.initialSeed,config.nrInLists)
+  			  val one = new OnePolicy(EdocsPolicy,config.nrEvaluationsPerUser,config.nrWarmups,searchJson,config.server,config.nrUsers,config.nrOrganizations,config.initialSeed,config.nrInLists,config.FilterEnabled,config.OtherEnabled)
   			  one.execute
   			  Files.write(Paths.get("FilterOutput.dat"), one.filterTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))
   			  Files.write(Paths.get("OriginalOutput.dat"), one.originalTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))

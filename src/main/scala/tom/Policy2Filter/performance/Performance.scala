@@ -52,7 +52,7 @@ object Performance {
 	  //Execute query on Elasticsearch database
 	  val serverSearch = Uri(server + "/_search?scroll=1m")
 	  val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=query.prettyPrint)).mapTo[HttpResponse]
-	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
+	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
 	  val resultJson = result.entity.asString.parseJson
 	  val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
 	  val scrollId = resultJson.asJsObject.fields.get("_scroll_id").get.toString
@@ -68,7 +68,7 @@ object Performance {
 		  val nr:JsValue = JsNumber(10000)
 		  val newQuery = Map("query"->queryPart,"size"->nr).toJson
 		  val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=newQuery.prettyPrint)).mapTo[HttpResponse]
-  	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
+  	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
   	  val resultJson = result.entity.asString.parseJson
   	  val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
   	  val scrollId = resultJson.asJsObject.fields.get("_scroll_id").get.toString
@@ -110,7 +110,7 @@ object Performance {
     		  val searchServer: Uri = Uri( globalServer + "/_search/scroll")
     		  val query = Map("scroll"->"1m".toJson,"scroll_id"-> varScroll.filterNot { x => x == '\"'}.toJson).toJson
     		  val response = (IO(Http) ? HttpRequest(POST,searchServer,entity=query.prettyPrint)).mapTo[HttpResponse]
-				  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
+				  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
 				  val resultJson = result.entity.asString.parseJson
 				  varScroll = resultJson.asJsObject.fields.get("_scroll_id").get.toString
 				  hits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
@@ -128,7 +128,7 @@ object Performance {
 				  val searchServer: Uri = Uri(globalServer + "/_search/scroll")
 				  val query = Map("scroll"->"1m".toJson,"scroll_id"-> varScroll.filterNot { x => x == '\"'}.toJson).toJson
 				  val response = (IO(Http) ? HttpRequest(POST,searchServer,entity=query.prettyPrint)).mapTo[HttpResponse]
-						  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
+						  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
 						  val resultJson = result.entity.asString.parseJson
 						  varScroll = resultJson.asJsObject.fields.get("_scroll_id").get.toString
 						  hits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
@@ -140,7 +140,7 @@ object Performance {
   def resetCache(server: String) {
     val serverCache: Uri = Uri(globalServer + "/_cache/clear")
     val response2 = (IO(Http) ? HttpRequest(POST,serverCache,entity="")).mapTo[HttpResponse]
-    val result2:HttpResponse = Await.result(response2,scala.concurrent.duration.Duration(10,scala.concurrent.duration.SECONDS))
+    val result2:HttpResponse = Await.result(response2,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
   }
   
   

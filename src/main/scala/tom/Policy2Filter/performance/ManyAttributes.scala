@@ -29,19 +29,26 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
     		  print("+")
     		  for(j <- 1 to nrAttributes) {
     		      print("-")
-	    			  Performance.resetCache(server)
-	    			  val tResult1 = new TimeResult
-      			  val qResult1 = new QueryResult
-      				val startTime = System.nanoTime()
-      				val filter = Performance.getFilter(policies(j-1), attributeString)
-      				tResult1.durationRest = (System.nanoTime - startTime)/1000
-      				Performance.executeSearch(filter, attributeString, searchJson, qResult1, tResult1, server)
-      				Performance.resetCache(server)
-      				val qResult2 = new QueryResult
-      				val tResult2 = new TimeResult
-      				Performance.executeOriginalQuery(searchJson, policies(j-1), attributeString, qResult2, tResult2, server)
-      				//verify
-      				assert(qResult1.wasRightTranslationOf(qResult2))
+    		      def try_(): Unit = {
+    		        try {
+      		        Performance.resetCache(server)
+    	    			  val tResult1 = new TimeResult
+          			  val qResult1 = new QueryResult
+          				val startTime = System.nanoTime()
+          				val filter = Performance.getFilter(policies(j-1), attributeString)
+          				tResult1.durationRest = (System.nanoTime - startTime)/1000
+          				Performance.executeSearch(filter, attributeString, searchJson, qResult1, tResult1, server)
+          				Performance.resetCache(server)
+          				val qResult2 = new QueryResult
+          				val tResult2 = new TimeResult
+          				Performance.executeOriginalQuery(searchJson, policies(j-1), attributeString, qResult2, tResult2, server)
+          				//verify
+          				assert(qResult1.wasRightTranslationOf(qResult2))
+    		        } catch {
+    		          case e: Exception => println("try"); try_
+    		        }
+    		      }
+    		      
     		  }
     	  }
     	  
@@ -49,20 +56,26 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
     	    print("-")
     	    for (j <- 1 to nrAttributes) {
     	      print("+")
-	    			  Performance.resetCache(server)
-	    			  val tResult1 = new TimeResult
-      			  val qResult1 = new QueryResult
-      				val startTime = System.nanoTime()
-      				val filter = Performance.getFilter(policies(j-1), attributeString)
-      				tResult1.durationRest = (System.nanoTime - startTime)/1000
-      				Performance.executeSearch(filter, attributeString, searchJson, qResult1, tResult1, server)
-      				filterTimers(j-1) += tResult1
-      			  Performance.resetCache(server)
-      				val qResult2 = new QueryResult
-      				val tResult2 = new TimeResult
-      				Performance.executeOriginalQuery(searchJson, policies(j-1), attributeString, qResult2, tResult2, server)
-      				assert(qResult1.wasRightTranslationOf(qResult2))
-      				originalTimers(j-1) += tResult2
+    		      def try_(): Unit = {
+    		        try {
+    	    			  Performance.resetCache(server)
+    	    			  val tResult1 = new TimeResult
+          			  val qResult1 = new QueryResult
+          				val startTime = System.nanoTime()
+          				val filter = Performance.getFilter(policies(j-1), attributeString)
+          				tResult1.durationRest = (System.nanoTime - startTime)/1000
+          				Performance.executeSearch(filter, attributeString, searchJson, qResult1, tResult1, server)
+          			  Performance.resetCache(server)
+          				val qResult2 = new QueryResult
+          				val tResult2 = new TimeResult
+          				Performance.executeOriginalQuery(searchJson, policies(j-1), attributeString, qResult2, tResult2, server)
+          				assert(qResult1.wasRightTranslationOf(qResult2))
+          				filterTimers(j-1) += tResult1
+          				originalTimers(j-1) += tResult2
+    		        } catch {
+    		          case e: Exception => println("try"); try_
+    		        }
+    	      }
     	    }
     	  }
       }
