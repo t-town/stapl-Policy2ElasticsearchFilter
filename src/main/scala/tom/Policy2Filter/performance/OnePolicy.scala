@@ -40,6 +40,7 @@ class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int
   			    case e: Exception => println("try"); try_
   			  }
 		    }
+  			try_
 			}
 		}
 		
@@ -79,6 +80,7 @@ class OnePolicy(policy: PolicyForEval, nrEvaluationsPerUser: Int, nrWarmups: Int
 				    case e: Exception => println("try"); try_
 		      }
 		    }
+		    try_
 		  
 		  }
 		}
