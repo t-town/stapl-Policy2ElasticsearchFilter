@@ -87,9 +87,11 @@ plot(values,naiveMeans,
      ylim = c(ymin,ymax),
      xlab = "# resources",
      ylab = "time in microseconds",
-     type="l")
+     type="l",
+     xaxt="n",
+     col = "blue")
 axis(1,at=values,labels=values)
 
 par(new=T)
-plot(values,filterMeans, xlim = c(xmin,xmax), ylim = c(ymin,ymax), xlab = '', ylab = '',type='l')
+plot(values,filterMeans, xlim = c(xmin,xmax), ylim = c(ymin,ymax), xlab = '', ylab = '',type='l', xaxt = "no", yaxt = "no", col = "red")
 par(new=F)

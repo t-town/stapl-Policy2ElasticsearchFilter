@@ -48,6 +48,7 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
     		          case e: Exception => println("try"); try_
     		        }
     		      }
+    		      try_
     		      
     		  }
     	  }
@@ -76,6 +77,7 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
     		          case e: Exception => println("try"); try_
     		        }
     	      }
+    	      try_
     	    }
     	  }
       }
