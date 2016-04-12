@@ -1,0 +1,10 @@
+  --nrEvaluations <value>
+        The number of evaluations per length of the policy that will be performed.
+  --nrWarmups <value>
+        The number of times a warmup will be performed.
+  --nrAttributes <value>
+        The number of attributes in the policy.
+  --server <value>
+        The server to connect to.
+
+java -jar Policy2Filter-ManyAttributes.jar --nrEvaluations 100 --nrWarmups 20 --nrAttributes 50 --server http://localhost:9200/thesis/ManyAttributes
