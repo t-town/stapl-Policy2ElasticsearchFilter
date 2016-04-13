@@ -1,5 +1,5 @@
-Error: Unknown option --otherEnabled
-Error: Unknown argument 'false'
+java -jar Policy2Filter-OnePolicy.jar --help
+Error: Unknown option --help
 Usage: scopt [options]
 
   --nrEvaluationsPerUser <value>
@@ -16,7 +16,6 @@ Usage: scopt [options]
         The nr of elements in each list that is part of the attributes.
   --server <value>
         The server to connect to.
-  --filterEnabled <value>
-        Is the filter enabled for this test.
-  --otherenabled <value>
-        Is the brute force method enabled.
+
+java -jar Policy2Filter-OnePolicy.jar --nrEvaluationsPerUser 500 --nrWarmups 20 --nrUsers 200 --nrOrganizations 20 --initialSeed 50 --nrInLists 3 --server http://localhost:9200/thesis/500000 --otherenabled false
+
