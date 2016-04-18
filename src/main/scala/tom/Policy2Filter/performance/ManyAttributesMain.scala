@@ -5,7 +5,7 @@ import spray.json.DefaultJsonProtocol._
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
 
-case class Config(nrEvaluations: Int = 10, nrWarmups: Int = 1, nrAttributes: Int = 10,server: String = "http://localhost:9200/thesis/ManyAttributes")
+case class Config(nrEvaluations: Int = 10, nrWarmups: Int = 1, nrAttributes: Int = 10,server: String = "http://localhost:9200/thesis/ManyAttributes", thresholdAllowed: Int = 0)
   
 object ManyAttributesMain {
     def main(args: Array[String]) {
@@ -23,6 +23,10 @@ object ManyAttributesMain {
       opt[String]("server") action { (x, c) =>
         c.copy(server = x)
       } text ("The server to connect to.")
+      opt[Int]("thresholdAllowed")  action { (x, c) =>
+          c.copy(thresholdAllowed = x)
+      } text ("The threshold from where the attribute is allowed. 0-4. 0:All are allowed, 4: All are allowed")
+
     }
     parser.parse(args, Config()) map { config =>
 			  val searchJson = """
@@ -37,7 +41,7 @@ object ManyAttributesMain {
 			  }
 			  """.parseJson
 			  val start = System.nanoTime
-			  val one = new ManyAttributes(config.nrEvaluations,config.nrAttributes,config.nrWarmups,searchJson,config.server)
+			  val one = new ManyAttributes(config.nrEvaluations,config.nrAttributes,config.nrWarmups,searchJson,config.server,config.thresholdAllowed)
 			  println("starting")
 			  one.execute
 			  //writing the result

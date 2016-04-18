@@ -3,7 +3,7 @@ package tom.Policy2Filter.performance
 import spray.json._
 import scala.collection.mutable.ListBuffer
 import tom.Policy2Filter.logic.End2End._
-class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, searchJson: JsValue, server: String) {
+class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, searchJson: JsValue, server: String, thresholdAllowed: Int) {
       val lst = ListBuffer[PerformanceResult]()
       
       for(i <- 1 to nrAttributes) {
@@ -95,11 +95,14 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
     	    returnString.append("resource.attr"+i+" = SimpleAttribute(String)\n")
 
     	  }
+        returnString.append("resource.attr50 = SimpleAttribute(String)\n")
         returnString.append("""Policy("nrAttributes:"""+nrAttributes+"""") :=  when (AlwaysTrue) apply PermitOverrides to (""")
         for(i <- 1 to nrAttributes) {
-          returnString.append("""Rule("attr"""+i+"""") := permit iff (resource.attr"""+i+""" === "0"),""")
+          returnString.append("""Rule("attr"""+i+"""") := permit iff (resource.attr"""+i+""" === "6"),""")
         }
+        returnString.append("""Rule("permit threshold") := permit iff (resourcde.attr50 gteq """+ thresholdAllowed + """),""")
         returnString.append("""Rule("default deny") := deny)""")
+        println(returnString.toString)
         return returnString.toString()
       }
 }

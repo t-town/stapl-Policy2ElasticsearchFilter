@@ -38,7 +38,9 @@ object OnePolicyMain {
         opt[Boolean]("otherEnabled")  action { (x, c) =>
           c.copy(otherEnabled = x)
         } text ("Is the brute force method enabled.")
+
       }
+    
       parser.parse(args, OneConfig()) map { config =>
   			  val searchJson = """
   			  {
@@ -54,12 +56,16 @@ object OnePolicyMain {
   			  val start = System.nanoTime()
   			  val one = new OnePolicy(EdocsPolicy,config.nrEvaluationsPerUser,config.nrWarmups,searchJson,config.server,config.nrUsers,config.nrOrganizations,config.initialSeed,config.nrInLists,config.filterEnabled,config.otherEnabled)
   			  one.execute
-  			  Files.write(Paths.get("FilterOutput.dat"), one.filterTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))
-  			  Files.write(Paths.get("OriginalOutput.dat"), one.originalTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))
+  			  if(config.filterEnabled) {
+  			      Files.write(Paths.get("FilterOutput.dat"), one.filterTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))
+  			      one.filterTimer.printHistogram
+  			      println("------------------------------------------------------------")
+  			  }
+  			  if(config.otherEnabled) {
+  			      Files.write(Paths.get("OriginalOutput.dat"), one.originalTimer.getJson.toString().getBytes(StandardCharsets.UTF_8))
+  			      one.originalTimer.printHistogram
+  			  }
   			  println("done")
-  			  one.filterTimer.printHistogram
-  			  println("------------------------------------------------------------")
-  			  one.originalTimer.printHistogram
   			  println("took: " + (System.nanoTime() - start)/1000000000 + "s")
   			  println("exiting")
   
