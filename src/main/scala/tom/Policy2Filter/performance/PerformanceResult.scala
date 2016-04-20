@@ -36,7 +36,7 @@ import scala.collection.mutable.ListBuffer
  */
 class PerformanceResult(label: String = "unnamed-timer") {
 
-  // timings in milliseconds
+  // timings in microseconds
   val timings = ListBuffer[TimeResult]()
   
   def +=(result: TimeResult) = {
@@ -95,10 +95,10 @@ class PerformanceResult(label: String = "unnamed-timer") {
   }
 
   def getJson = JsObject(
-    "nbReceived" -> JsNumber(count),
-    "mean" -> JsNumber(mean),
-    "confInt" -> JsNumber(confInt()),
-    "stdev" -> JsNumber(stdDev),
+    "nbReceived" -> {try{JsNumber(count) } catch { case e:Exception => JsNumber(0)}},
+    "mean" -> {try{JsNumber(mean) } catch { case e:Exception => JsNumber(0)}},
+    "confInt" -> {try{JsNumber(confInt()) } catch { case e:Exception => JsNumber(0)}},
+    "stdev" -> {try{JsNumber(stdDev) } catch { case e:Exception => JsNumber(0)}},
     "totals" -> JsArray(totalTimings.map(x => JsNumber(x)).toList),
     "serverDuration" -> JsArray(timings.map(x => JsNumber(x.durationServer)).toList),
     "otherDuration" -> JsArray(timings.map(x => JsNumber(x.durationRest)).toList))
