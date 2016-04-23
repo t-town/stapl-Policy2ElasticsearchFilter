@@ -45,7 +45,7 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
           				//verify
           				assert(qResult1.wasRightTranslationOf(qResult2))
     		        } catch {
-    		          case e: Exception => println("try"); try_
+    		          case e: Exception => println("try" + e.toString()); try_
     		        }
     		      }
     		      try_
