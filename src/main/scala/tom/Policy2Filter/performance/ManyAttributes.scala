@@ -100,7 +100,7 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
         for(i <- 1 to nrAttributes) {
           returnString.append("""Rule("attr"""+i+"""") := permit iff (resource.attr"""+i+""" === "6"),""")
         }
-        returnString.append("""Rule("permit threshold") := permit iff (resource.attr50 gteq """+ thresholdAllowed + """),""")
+        returnString.append("""Rule("permit threshold") := permit iff (resource.attr50 gteq """+ '"' + thresholdAllowed + '"' +  """),""")
         returnString.append("""Rule("default deny") := deny)""")
         return returnString.toString()
       }
