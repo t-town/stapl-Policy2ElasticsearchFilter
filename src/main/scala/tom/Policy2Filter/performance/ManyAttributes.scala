@@ -74,7 +74,7 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
           				filterTimers(j-1) += tResult1
           				originalTimers(j-1) += tResult2
     		        } catch {
-    		          case e: Exception => println("try"); try_
+    		          case e: Exception => println("try" + e.toString()); try_
     		        }
     	      }
     	      try_
@@ -100,9 +100,8 @@ class ManyAttributes(nrEvaluations: Int, nrAttributes: Int, nrWarmups: Int, sear
         for(i <- 1 to nrAttributes) {
           returnString.append("""Rule("attr"""+i+"""") := permit iff (resource.attr"""+i+""" === "6"),""")
         }
-        returnString.append("""Rule("permit threshold") := permit iff (resourcde.attr50 gteq """+ thresholdAllowed + """),""")
+        returnString.append("""Rule("permit threshold") := permit iff (resource.attr50 gteq """+ thresholdAllowed + """),""")
         returnString.append("""Rule("default deny") := deny)""")
-        println(returnString.toString)
         return returnString.toString()
       }
 }
