@@ -1,1 +1,20 @@
-+
++++++++++++++++++++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++try
+try
+[WARN] [04/24/2016 15:02:34.185] [default-akka.actor.default-dispatcher-7] [akka://default/user/IO-HTTP/group-0/0] POST request to '/_search/scroll' timed out after 20 seconds, closing connection
+[WARN] [04/24/2016 15:02:34.229] [default-akka.actor.default-dispatcher-3] [akka://default/user/IO-HTTP/host-connector-0/0] POST request to /_search/scroll timed out in response to POST request to /_search/scroll with no retries left, dispatching error...
+[INFO] [04/24/2016 15:02:34.250] [default-akka.actor.default-dispatcher-8] [akka://default/deadLetters] Message [akka.actor.Status$Failure] from Actor[akka://default/user/IO-HTTP/host-connector-0/0#1803286208] to Actor[akka://default/deadLetters] was not delivered. [1] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+[INFO] [04/24/2016 15:02:34.251] [default-akka.actor.default-dispatcher-8] [akka://default/deadLetters] Message [spray.http.HttpResponse] from Actor[akka://default/user/IO-HTTP/host-connector-0/1#864261285] to Actor[akka://default/deadLetters] was not delivered. [2] dead letters encountered. This logging can be turned off or adjusted with configuration settings 'akka.log-dead-letters' and 'akka.log-dead-letters-during-shutdown'.
+++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++-++++[0.0,2591261.2)            | 0   | 
+[2591261.2,5182522.4)      | 0   | 
+[5182522.4,7773783.600000001) | 0   | 
+[7773783.600000001,1.03650448E7) | 0   | 
+[1.03650448E7,1.2956306E7) | 22  | ===
+[1.2956306E7,1.5547567200000001E7) | 378 | ===============================================
+[1.5547567200000001E7,1.8138828400000002E7) | 391 | =================================================
+[1.8138828400000002E7,2.07300896E7) | 11  | =
+[2.07300896E7,2.33213508E7) | 1   | 
+[2.33213508E7,2.5912612E7) | 0   | 
+------------------------------------------------------------
+done
+took: 13802s
+exiting
