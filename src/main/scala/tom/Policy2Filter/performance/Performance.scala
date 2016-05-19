@@ -72,8 +72,7 @@ object Performance {
   			  case Right(Permit) =>
   			  {
   				  //Access always allowed: original query
-  				  val nr:JsValue = JsNumber(10000)
-  						  Map("query"->searchJson,"size"->nr).toJson
+  			    searchJson
   			  }
   			  //We already know there will be no results
   			  case _ => throw new ZeroResultsException

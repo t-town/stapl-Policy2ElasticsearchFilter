@@ -39,7 +39,7 @@ object SmallRequestMain {
     parser.parse(args, SmallConfig()) map { config =>
 			  val searchJson = """
 			  {
-			  "size" : 100,
+			  "size" : 500,
 			  "query": {
 			  "match": {"type":"invoice"}
 			  }
