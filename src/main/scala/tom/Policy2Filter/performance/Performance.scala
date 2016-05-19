@@ -62,14 +62,12 @@ object Performance {
   }
   
   def executeMinimalSearch(filter: Either[JsValue,Decision], searchJson: JsValue, tResult:TimeResult, server:String) {
-        val startTime = System.nanoTime()
 			  val query:JsValue = filter match {
   			  case Left(filter) =>
   			  {
   				  //We have to combine the filter with the original searchQuery
   				  val queryPart = searchJson.asJsObject.fields.get("query").get.asJsObject
-  						  val nr:JsValue = JsNumber(10000)
-  						  Map("query"->Map("bool"->Map("must"->queryPart,"filter"->filter)).toJson,"size"->nr).toJson
+  						  Map("query"->Map("bool"->Map("must"->queryPart,"filter"->filter)).toJson).toJson
   			  }
   			  case Right(Permit) =>
   			  {
@@ -80,6 +78,7 @@ object Performance {
   			  //We already know there will be no results
   			  case _ => throw new ZeroResultsException
 	  }
+		val startTime = System.nanoTime()
 	  val serverSearch = Uri(server + "/_search")
 	  val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=query.prettyPrint)).mapTo[HttpResponse]
 	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
