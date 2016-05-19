@@ -19,7 +19,7 @@
 			Rule("not org1") := deny iff (resource.origin === "1"),
 			Rule("permit") := permit
 		),
-		Policy(“manager") := when (subject.role === "manager") apply PermitOverrides to (
+		Policy(“BBank Accountmanager") := when (subject.role === "manager") apply PermitOverrides to (
 			Rule("creator") := permit iff (resource.creator === subject.id),
 			Rule("addressed") := permit iff (resource.destination === subject.id),
 			Rule("addressed organization") := permit iff (resource.destination_organization === subject.organization_id),

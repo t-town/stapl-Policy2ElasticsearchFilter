@@ -51,19 +51,15 @@ object App {
 		  """
 		  resource.creator = SimpleAttribute(String)
 		  resource._id = SimpleAttribute(String)
-		  resource.origin = SimpleAttribute(String)
+		  resource.organization = SimpleAttribute(String)
 		  subject.organization_id = SimpleAttribute(String)
 		  resource.destinationorg = SimpleAttribute(String)
 		  subject.assigned_organizations = ListAttribute(String)
 		  
-	    Policy("Simple policy with ownership rule") := when (action.id === "view") apply FirstApplicable to (
-	     	Rule("Origin") := deny iff (resource.origin === subject.organization_id),
-	       Policy("new policy") := when (subject.id === "INVALID") apply PermitOverrides to (
-  			  Rule("Ownership rule") := permit iff (subject.id === subject.id)
-	      ),
-		    //Rule("Organization restriction") := permit iff (resource.origin === subject.organization_id),
-			  Rule("Ownership rule") := deny iff (resource.creator === subject.id),
-  			Rule("Default permit") := permit
+				Policy("assigned organisations") := when (action.id === "view") apply FirstApplicable to (
+	        Rule("Edocs Rule") := permit iff ((resource.organization in subject.assigned_organizations) | (subject.id gt resource.creator)),
+				  Rule("deny") := deny
+				
 	    )"""
 
     val (s, a, r, e) = BasicPolicy.containers
@@ -101,7 +97,7 @@ object App {
 		println((one));
 		//val resource_creator = SimpleAttribute(RESOURCE,"creator",String)
 
-		val rule = one.subpolicies(1) match {
+		val rule = one.subpolicies(0) match {
 		  case x: stapl.core.Rule => x
 		  case _ => throw new RuntimeException
 		}

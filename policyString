@@ -2,6 +2,7 @@
 	subject.department = SimpleAttribute(String)				
 	subject.assigned_organizations = ListAttribute(String) 
 
+	resource.organization = SimpleAttribute(String)
 	resource.creator = SimpleAttribute(String)
 	resource.origin = SimpleAttribute(String)						
 	resource.type = SimpleAttribute(String)
@@ -15,7 +16,7 @@
 	//	Rule("Organization restriction") := permit iff ((resource.origin === subject.organization_id) & ("Accounting" === subject.department)),
 	//	Rule("Default deny") := deny
 	)*/
-	
+	/*
 	Policy("Simple Policy") := when  (action.id === "view") apply FirstApplicable to (
 		Rule("Ownership rule") := permit iff (resource.creator === subject.id),
 		Rule("Origin") := deny iff (!(subject.organization_id === resource.destination_organization)),
@@ -23,3 +24,10 @@
 		//Rule("permit") := permit
 		Rule("Default deny") := deny
 	)
+	*/
+		  
+	Policy("assigned organisations") := when (action.id === "view") apply FirstApplicable to (
+	        Rule("Edocs Rule") := permit iff ((resource.organization in subject.assigned_organizations) | (subject.id gt resource.creator)),
+		 Rule("deny") := deny
+				
+	    )

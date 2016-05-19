@@ -13,7 +13,7 @@ object PolicyReduce {
     targetVal match {
       case Right(x) => x match {
         case false => return Right(NotApplicable)
-        case true => 
+        case true => targetPolicy = new Policy(targetPolicy.id)(AlwaysTrue,targetPolicy.pca,targetPolicy.subpolicies.toList,targetPolicy.obligations)
       }
       case Left(reducedTarget) => targetPolicy = reduceResourceTarget(targetPolicy,reducedTarget)
     }
@@ -25,9 +25,9 @@ object PolicyReduce {
     }
     
     targetPolicy.pca match {
-      case PermitOverrides => HandlePermitOverrides(policy,reducedSubpolicies,ctx)
-      case DenyOverrides => HandleDenyOverrides(policy,reducedSubpolicies,ctx)
-      case FirstApplicable => HandleFirstApplicable(policy,reducedSubpolicies,ctx)
+      case PermitOverrides => HandlePermitOverrides(targetPolicy,reducedSubpolicies,ctx)
+      case DenyOverrides => HandleDenyOverrides(targetPolicy,reducedSubpolicies,ctx)
+      case FirstApplicable => HandleFirstApplicable(targetPolicy,reducedSubpolicies,ctx)
     }
     
   }

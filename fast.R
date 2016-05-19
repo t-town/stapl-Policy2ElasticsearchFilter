@@ -47,7 +47,7 @@ naive5 <- fromJSON(f)
 close(f)
 
 mapf <- function(lst) {
-  return(mean(lst["totals"][[1]]))
+  return(median(lst["totals"][[1]])/1000)
 } 
 plotIncreasing <- function(filter, naive, subtitle) {
   means1 = unlist(Map(mapf,filter))
@@ -55,9 +55,9 @@ plotIncreasing <- function(filter, naive, subtitle) {
   ymin = min(min(means1),min(means2))
   ymax = max(max(means1),max(means2))
   #1 million micro seconds = 1 second
-  plot(1:50,means1,ylim=c(0,160000),type="p",col="blue",xlab = "# arguments", ylab = "time in microseconds", main = paste("Increasing amount of resource attributes\n processing 1000 documents\n",subtitle))
+  plot(1:50,means1,ylim=c(0,180),type="b",pch='+',xlab = "# attributes", ylab = "time in milliseconds", main = paste("Increasing amount of resource attributes\n processing 1000 documents\n",subtitle))
   par(new=T)
-  plot(1:50,means2,col="red",type="p",ylim=c(0,180000),xlab = '', ylab = '',xaxt = "no", yaxt = "no")
+  plot(1:50,means2,type="b",ylim=c(0,180),xlab = '', ylab = '',xaxt = "no", yaxt = "no")
   par(xpd=TRUE)
   legend("top",c("new implementation","naive implementation"),col = c("blue","red"),pch="o")
   
@@ -66,15 +66,15 @@ par(mfrow=c(2,3))
 par(mfrow=c(1,1))
 plotIncreasing(filter0,naive0,"100 % of documents allowed")
 par(new=T)
-plotIncreasing(filter1,naive1,"")
+plotIncreasing(filter1,naive1,"80 % of documents allowed")
 par(new=T)
-plotIncreasing(filter2,naive2,"")
+plotIncreasing(filter2,naive2,"60 % of documents allowed")
 par(new=T)
-plotIncreasing(filter3,naive3,"")
+plotIncreasing(filter3,naive3,"40 % of documents allowed")
 par(new=T)
-plotIncreasing(filter4,naive4,"")
+plotIncreasing(filter4,naive4,"20 % of documents allowed")
 par(new=T)
-plotIncreasing(filter5,naive5,"")
+plotIncreasing(filter5,naive5,"0 % of documents allowed")
 
 
 #for the increasing number of documents
@@ -113,6 +113,16 @@ close(f)
 filterResults$r20 <- json1
 naiveResults$r20 <- json2
 
+f = file("results/30000/FilterOutput.dat")
+json1 <- fromJSON(f)
+close(f)
+f = file("results/30000/OriginalOutput.dat")
+json2 <- fromJSON(f)
+close(f)
+
+filterResults$r30 <- json1
+naiveResults$r30 <- json2
+
 f = file("results/50000/FilterOutput.dat")
 json1 <- fromJSON(f)
 close(f)
@@ -127,6 +137,15 @@ close(f)
 filterResults$r50 <- json1
 naiveResults$r50 <- json2
 
+f = file("results/70000/FilterOutput.dat")
+json1 <- fromJSON(f)
+close(f)
+f = file("results/70000/OriginalOutput.dat")
+json2 <- fromJSON(f)
+close(f)
+
+filterResults$r70 <- json1
+naiveResults$r70 <- json2
 
 f = file("results/100000/FilterOutput.dat")
 json1 <- fromJSON(f)
@@ -138,15 +157,15 @@ close(f)
 filterResults$r100 <- json1
 naiveResults$r100 <- json2
 
-f = file("results/500000/FilterOutput.dat")
+f = file("results/150000/FilterOutput.dat")
 json1 <- fromJSON(f)
-filterResults$r500 <- json1
+filterResults$r150 <- json1
 
 #evolution:
 par(mfrow=c(1,1))
-values = c(5000,10000,20000,50000,100000)
-naiveValues = list(naiveResults$r5$totals,naiveResults$r10$totals,naiveResults$r20$totals,naiveResults$r50$totals,naiveResults$r100$totals)
-filterValues = list(filterResults$r5$totals,filterResults$r10$totals,filterResults$r20$totals,filterResults$r50$totals,filterResults$r100$totals)
+values = c(5000,10000,20000,30000,50000,70000,100000,150000)
+naiveValues = list(naiveResults$r5$totals,naiveResults$r10$totals,naiveResults$r20$totals,naiveResults$r30$totals,naiveResults$r50$totals,naiveResults$r70$totals,naiveResults$r100$totals)
+filterValues = list(filterResults$r5$totals,filterResults$r10$totals,filterResults$r20$totals,filterResults$r30$totals,filterResults$r50$totals,filterResults$r70$totals,filterResults$r100$totals,filterResults$r150$totals)
 mapf <- function(list) {
   return(mean(list))
 }
@@ -166,16 +185,31 @@ plot(values,filterMeans,
      xaxt="n",
      col = "blue",
      main = "Total processing time to retrieve all allowable resources")
-axis(1,at=values,labels=values)
+axis(1,at=values,labels=values,cex.axis = 0.9)
 
 par(new=T)
-values2 = c(5000,10000,20000,50000,100000)
+values2 = c(5000,10000,20000,30000,50000,70000,100000)
 plot(values2,naiveMeans, xlim = c(xmin,xmax), ylim = c(ymin,ymax), xlab = '', ylab = '',type='l', xaxt = "no", yaxt = "no", col = "red")
 par(new=F)
 legend(x = xmin, y= ymax, c("new implementation","naive implementation"),col = c("blue","red"),lty = c(1,1))
 
-boxplot(filterValues,main = "boxplot of total duration of new implementation",names = values, ylab = "time in microseconds", xlab = "number of resources in database",col = "blue")
-boxplot(naiveValues,main = "boxplot of total duration of naive implementation",names = values, ylab = "time in microseconds", xlab = "number of resources in database",col = "red")#, #add = T)
+par(mfrow=c(1,2))
+x = boxplot(filterValues,
+        main = "boxplot of total duration of new implementation",
+        names = values,
+        ylab = "time in microseconds",
+        xlab = "number of resources in database",
+        outline = F,
+        at = c(0.5,1,2,3,5,7,10,15),
+        ylim=c(ymin,ymax*1.15))#col = "blue")
+boxplot(naiveValues,
+        main = "boxplot of total duration of naive implementation",
+        names = values2,
+        ylab = "time in microseconds",
+        xlab = "number of resources in database",
+        outline = F,
+        at = c(0.5,1,2,3,5,7,10),
+        ylim=c(ymin,ymax*1.15))#col = "blue")
 
 xmin = min(min(unlist(naiveValues[2])),min(unlist(filterValues[2])))
 xmax = max(max(unlist(naiveValues[2])),max(unlist(filterValues[2])))
@@ -224,6 +258,68 @@ xmax = max(max(unlist(naiveServerValues[2])),max(unlist(filterServerValues[2])))
 hist(unlist(naiveServerValues[2]),col = rgb(1,0,0,0.5),xlim=c(xmin,xmax), xlab = "processing time in microseconds", main = "histogram of Elasticsearch processing time to retrieve all allowable resources")
 hist(unlist(filterServerValues[2]),col=rgb(0,0,1,0.5),add=T)
 legend(x = xmax*0.75,y=300,c("new implementation","naive implementation"),col = c("blue","red"),lty = c(1,1))
+
+#Stacked representation using means!
+mapf <- function(list) {
+  return(mean(list))
+}
+naiveServerValues = list(naiveResults$r5$serverDuration,
+                         naiveResults$r10$serverDuration,
+                         naiveResults$r20$serverDuration,
+                         naiveResults$r30$serverDuration,
+                         naiveResults$r50$serverDuration,
+                         naiveResults$r70$serverDuration,
+                         naiveResults$r100$serverDuration)
+filterServerValues = list(filterResults$r5$serverDuration,
+                          filterResults$r10$serverDuration,
+                          filterResults$r20$serverDuration,
+                          filterResults$r30$serverDuration,
+                          filterResults$r50$serverDuration,
+                          filterResults$r70$serverDuration,
+                          filterResults$r100$serverDuration)
+naiveServerMeans = unlist(Map(mapf, naiveServerValues))
+filterServerMeans = unlist(Map(mapf, filterServerValues))
+
+naiveServerValues = list(naiveResults$r5$otherDuration,
+                         naiveResults$r10$otherDuration,
+                         naiveResults$r20$otherDuration,
+                         naiveResults$r30$otherDuration,
+                         naiveResults$r50$otherDuration,
+                         naiveResults$r70$otherDuration,
+                         naiveResults$r100$otherDuration)
+filterServerValues = list(filterResults$r5$otherDuration,
+                          filterResults$r10$otherDuration,
+                          filterResults$r20$otherDuration,
+                          filterResults$r30$otherDuration,
+                          filterResults$r50$otherDuration,
+                          filterResults$r70$otherDuration,
+                          filterResults$r100$otherDuration)
+naiveOtherMeans = unlist(Map(mapf, naiveServerValues))
+filterOtherMeans = unlist(Map(mapf, filterServerValues))
+
+ymin = min(naiveServerMeans+naiveOtherMeans,filterServerMeans+filterOtherMeans)
+ymax = max(naiveServerMeans+naiveOtherMeans,filterServerMeans+filterOtherMeans)
+
+par(mfrow=c(1,2),oma=c(5,0,0,0),xpd=NA)
+
+dd = t(data.frame(filterServerMeans,filterOtherMeans))
+barplot(dd,ylim=c(0,ymax),
+        main = "New method",
+        xlab = "# resources",
+        ylab = "time in microseconds",
+        col=c("light grey","dark grey"),
+        names.arg = c("5000","10000","20000","30000","50000","70000","100000"))
+legend(x=0,y=-1800000,
+       ncol=2,
+       legend=c("Elasticsearch time","Other processing time"),
+       fill=c("light grey","dark grey"), title="Time spent on:")
+dd = t(data.frame(naiveServerMeans,naiveOtherMeans))
+barplot(dd,ylim=c(0,ymax),
+        main = "Naive Method",
+        xlab = "# resources",
+        ylab = "time in microseconds",
+        col=c("light grey","dark grey"),
+        names.arg = c("5000","10000","20000","30000","50000","70000","100000"))
 
 #stacked representation
 par(mfrow=c(1,2))

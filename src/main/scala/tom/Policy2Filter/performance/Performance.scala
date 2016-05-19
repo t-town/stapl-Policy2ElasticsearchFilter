@@ -60,7 +60,33 @@ object Performance {
 		tResult.durationServer = (System.nanoTime() - startTime)/1000
 
   }
-
+  
+  def executeMinimalSearch(filter: Either[JsValue,Decision], searchJson: JsValue, tResult:TimeResult, server:String) {
+        val startTime = System.nanoTime()
+			  val query:JsValue = filter match {
+  			  case Left(filter) =>
+  			  {
+  				  //We have to combine the filter with the original searchQuery
+  				  val queryPart = searchJson.asJsObject.fields.get("query").get.asJsObject
+  						  val nr:JsValue = JsNumber(10000)
+  						  Map("query"->Map("bool"->Map("must"->queryPart,"filter"->filter)).toJson,"size"->nr).toJson
+  			  }
+  			  case Right(Permit) =>
+  			  {
+  				  //Access always allowed: original query
+  				  val nr:JsValue = JsNumber(10000)
+  						  Map("query"->searchJson,"size"->nr).toJson
+  			  }
+  			  //We already know there will be no results
+  			  case _ => throw new ZeroResultsException
+	  }
+	  val serverSearch = Uri(server + "/_search")
+	  val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=query.prettyPrint)).mapTo[HttpResponse]
+	  val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
+	  tResult.durationServer = (System.nanoTime() - startTime)/1000
+  }
+  
+  
   def executeOriginalQuery(searchJson: JsValue, policyString: String, attributeString: String, qResult: QueryResult, tResult: TimeResult, server: String) {
       val time = System.nanoTime
 		  val serverSearch: Uri = Uri(server +  "/_search?scroll=1m")
@@ -75,6 +101,17 @@ object Performance {
   	  tResult.durationServer += (System.nanoTime - time)/1000
   	  continueScrollAndCheck(scrollId, policyString, attributeString, initialhits, server, qResult, tResult)
   }
+  
+  def executeMinimalSearchOriginalQuery(searchJson: JsValue, policyString: String, attributes: String, tResult: TimeResult, server:String) {
+    val time = System.nanoTime
+    val serverSearch:Uri = Uri(server + "/_search")
+		val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=searchJson.prettyPrint)).mapTo[HttpResponse]
+  	val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
+  	val resultJson = result.entity.asString.parseJson
+  	val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
+  	evaluateResults(initialhits,policyString,attributes,new QueryResult)
+  }
+
   
   private def evaluateResults(results: JsValue, policyString: String, attributeString: String, qResult: QueryResult){
 	    val policy = tom.Policy2Filter.logic.Utility.parsePolicyString(policyString)
