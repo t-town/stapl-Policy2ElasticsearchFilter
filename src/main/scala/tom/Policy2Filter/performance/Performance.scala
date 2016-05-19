@@ -103,13 +103,16 @@ object Performance {
   }
   
   def executeMinimalSearchOriginalQuery(searchJson: JsValue, policyString: String, attributes: String, tResult: TimeResult, server:String) {
-    val time = System.nanoTime
+    var time = System.nanoTime
     val serverSearch:Uri = Uri(server + "/_search")
 		val response = (IO(Http) ? HttpRequest(POST,serverSearch,entity=searchJson.prettyPrint)).mapTo[HttpResponse]
   	val result:HttpResponse = Await.result(response,scala.concurrent.duration.Duration(30,scala.concurrent.duration.SECONDS))
   	val resultJson = result.entity.asString.parseJson
   	val initialhits = resultJson.asJsObject.fields.get("hits").get.asJsObject.fields.get("hits").get
+  	tResult.durationServer = (System.nanoTime - time)/1000
+  	time = System.nanoTime
   	evaluateResults(initialhits,policyString,attributes,new QueryResult)
+    tResult.durationRest = (System.nanoTime - time)/1000
   }
 
   
