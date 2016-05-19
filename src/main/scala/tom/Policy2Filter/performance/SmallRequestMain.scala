@@ -41,11 +41,7 @@ object SmallRequestMain {
 			  {
 			  "size" : 100,
 			  "query": {
-			  "filtered": {
-			  "query": {
-			  "match_all": {}
-			  }
-			  }
+			  "match": {"type":"invoice"}
 			  }
 			  }
 			  """.parseJson
