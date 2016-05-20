@@ -34,13 +34,13 @@ class SmallRequest(nrEvaluations: Int, nrServers: Int, nrUsers: Int,nrOrganizati
     		      print("-")
     		      def try_(): Unit = {
     		        try {
-      		        Performance.resetCache(server)
+      		        //Performance.resetCache(server)
     	    			  val tResult1 = new TimeResult
           				val startTime = System.nanoTime()
           				val filter = Performance.getFilter(EdocsPolicy.getPolicyString, userString)
           				tResult1.durationRest = (System.nanoTime - startTime)/1000
           				Performance.executeMinimalSearch(filter, searchJson, tResult1, server)
-          				Performance.resetCache(server)
+          				//Performance.resetCache(server)
           				val tResult2 = new TimeResult
           				Performance.executeMinimalSearchOriginalQuery(searchJson, EdocsPolicy.getPolicyString, userString, tResult2, server)
     		        } catch {
@@ -60,13 +60,13 @@ class SmallRequest(nrEvaluations: Int, nrServers: Int, nrUsers: Int,nrOrganizati
     	    		print("+")
     	    		def try_(): Unit = {
     	    				try {
-    	    					Performance.resetCache(server)
+    	    					//Performance.resetCache(server)
     	    					val tResult1 = new TimeResult
     	    					val startTime = System.nanoTime()
     	    					val filter = Performance.getFilter(EdocsPolicy.getPolicyString, userString)
     	    					tResult1.durationRest = (System.nanoTime - startTime)/1000
     	    					Performance.executeMinimalSearch(filter, searchJson, tResult1, server)
-    	    					Performance.resetCache(server)
+    	    					//Performance.resetCache(server)
     	    					val tResult2 = new TimeResult
     	    					Performance.executeMinimalSearchOriginalQuery(searchJson, EdocsPolicy.getPolicyString, userString, tResult2, server)
     	    					filterTimers(j-1) += tResult1
