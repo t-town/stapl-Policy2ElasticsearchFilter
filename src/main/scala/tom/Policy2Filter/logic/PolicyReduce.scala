@@ -1,12 +1,35 @@
 package tom.Policy2Filter.logic
+/**
+ *    Copyright 2016 KU Leuven Research and Developement - iMinds - Distrinet
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ *    Administrative Contact: dnet-project-office@cs.kuleuven.be
+ *    Technical Contact: maarten.decat@cs.kuleuven.be
+ *    Author: tom.stappaerts@student.kuleuven.be
+ */
 
 import stapl.core._
 import stapl.core.pdp._
 import scala.collection.mutable.ListBuffer
 
-//prune the policy before using it
+/**
+ * Object: PolicyReduce
+ * Function: Partially evaluate the policy using the known attributes
+ */
 object PolicyReduce {
   
+  //Translate to resource only policy
   def toResource(policy: Policy, ctx: EvaluationCtx): Either[Policy,Decision] = {
     val targetVal = ExpressionReduce.toResource(policy.target,ctx)
     var targetPolicy = policy
@@ -205,6 +228,10 @@ object PolicyReduce {
   
 }
 
+/**
+ * Object: RuleReduce
+ * Function: Partial evaluation of a STAPL Rule using the known attributes
+ */
 object RuleReduce {
   
   def toResource(rule: Rule, ctx: EvaluationCtx): Either[Rule,Decision] = {
@@ -231,10 +258,14 @@ object RuleReduce {
   }
 }
 
+/**
+ * Object: ExpressionReduce
+ * Function: Partially evaluate the STAPL expression using known attributes
+ */
+
 object ExpressionReduce {
  
   def toResource(exp: Expression, ctx: EvaluationCtx): Either[Expression,Boolean] = {
-    //println("matching: " ++ exp.toString())
 		exp match {
   		case s: EqualsValue => simple2Resource(s, ctx)
   		case s: GreaterThanValue => simple2Resource(s,ctx)

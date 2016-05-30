@@ -1,4 +1,23 @@
 package tom.Policy2Filter.logic
+/**
+ *    Copyright 2016 KU Leuven Research and Developement - iMinds - Distrinet
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ *    Administrative Contact: dnet-project-office@cs.kuleuven.be
+ *    Technical Contact: maarten.decat@cs.kuleuven.be
+ *    Author: tom.stappaerts@student.kuleuven.be
+ */
 
 import stapl.core._
 import scala.util.parsing.json._
@@ -11,6 +30,11 @@ import scala.util.{Success,Failure}
 import org.parboiled2.ParseError
 import Thesis.Thesisbuild.Experiment._
 
+/**
+ * Object: Policy2Filter
+ * Function: Translate policy declared in STAPL to Elasticsearch filter
+ * Options: debug = true: print intermediate steps
+ */
 object Policy2Filter {
   
   var debug = false
@@ -101,7 +125,10 @@ object Policy2Filter {
   
 }
 
-
+/**
+ * Object: Rule2Filter
+ * Function: Translate Rule declared in STAPL to Elasticsearch filter
+ */
 private object Rule2Filter {
   
   def toFilter(rule: stapl.core.Rule, ctx: EvaluationCtx): JsValue = {
@@ -120,7 +147,10 @@ private object Rule2Filter {
   }
 }
 
-
+/**
+ * Object: Expression2Filter
+ * Function: Translate Expression declared in STAPL to Elasticsearch filter
+ */
 private object Expression2Filter {
 
 	def toFilter(exp: Expression, ctx: EvaluationCtx): JsValue = {

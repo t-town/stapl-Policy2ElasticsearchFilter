@@ -1,12 +1,33 @@
 package tom.Policy2Filter.logic
+/**
+ *    Copyright 2016 KU Leuven Research and Developement - iMinds - Distrinet
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ *    Administrative Contact: dnet-project-office@cs.kuleuven.be
+ *    Technical Contact: maarten.decat@cs.kuleuven.be
+ *    Author: tom.stappaerts@student.kuleuven.be
+ */
 
 import stapl.core.pdp._
 import stapl.core._
 import scala.collection.mutable.HashMap
 import stapl.core
 
-//We need two finders -> one for the reform of the policy to non resource
-// the other one when we are deciding.
+/**
+ * Class: SimpleAttributeFinderModule
+ * Function: Interprets the given attributestring: AttributeFinderModule
+ */
 class SimpleAttributeFinderModule(attributeString: String) extends AttributeFinderModule {
 
 	  val attributes = ResourceReader.readFromString(attributeString)

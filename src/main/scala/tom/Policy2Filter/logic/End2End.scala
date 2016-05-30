@@ -1,6 +1,6 @@
 package tom.Policy2Filter.logic
 
-import Policy2Filter._
+qimport Policy2Filter._
 import stapl.core._
 import stapl.core.pdp._
 import spray.json._
@@ -18,6 +18,11 @@ import scala.collection.mutable.Set
 import spray.http.HttpEntity.apply
 import akka.pattern._
 import tom.Policy2Filter.performance.Performance
+
+/**
+ * Object: End2end
+ * Function: Provide functions for End2End (without server) functionality
+ */
 
 object End2End {
   implicit val system: ActorSystem = ActorSystem()
